@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "Gerenciamento de Fretes",
+    "slug": "gerenciamento-de-fretes",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "plugins": [
+      "expo-dev-client",
+      "expo-font"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.seudominio.fretes"
+    },
+    "android": {
+      "package": "com.seudominio.fretes",
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {},
+    "extra": {
+      "eas": {
+        "projectId": "16f33803-7ae7-4c7f-8f2d-0158d3d99c45"
+      }
+    }
+  }
+}
