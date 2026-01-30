@@ -8,10 +8,7 @@
     "assetBundlePatterns": [
       "**/*"
     ],
-    "plugins": [
-      "expo-dev-client",
-      "expo-font"
-    ],
+    "plugins": [],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.seudominio.fretes"

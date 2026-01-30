@@ -18,7 +18,11 @@ export const sincronizarParaNuvem = async () => {
   const pendentes = await listarFretesNaoSincronizados();
   for (const frete of pendentes) {
     const ref = doc(db, COLECAO, frete.id);
-    await setDoc(ref, frete);
+    const payload = {
+      ...frete,
+      observacoes: frete.observacoes ?? null,
+    };
+    await setDoc(ref, payload);
     await marcarComoSincronizado(frete.id);
   }
 };
