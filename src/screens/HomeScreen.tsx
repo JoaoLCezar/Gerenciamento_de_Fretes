@@ -32,8 +32,10 @@ export default function HomeScreen({ navigation }: any) {
     }, [])
   );
 
-  const formatarMoeda = (v: number) =>
-    v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const formatarMoeda = (v: number | undefined) => {
+    if (!v && v !== 0) return 'R$ 0,00';
+    return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  };
 
   if (loading) {
     return (

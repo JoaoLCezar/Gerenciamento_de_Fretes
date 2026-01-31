@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { criarFrete } from '../services/database';
+import { criarFreteComFila } from '../services/offlineQueue';
 
 export default function NovoFreteScreen({ navigation }: any) {
   const [data, setData] = useState<Date | null>(null);
@@ -52,16 +52,28 @@ export default function NovoFreteScreen({ navigation }: any) {
 
     setSaving(true);
     try {
-      await criarFrete({
+      const freteData: any = {
         data: formatarDataISO(data),
         origem,
         destino,
         valor: valorNumber,
-        observacoes: observacoes.trim() || undefined,
-      });
+        createdAt: Date.now(),
+      };
+      if (observacoes.trim()) {
+        freteData.observacoes = observacoes.trim();
+      }
+      await criarFreteComFila(freteData);
+      // Sucesso silencioso - sem Alert
+      setOrigem('');
+      setDestino('');
+      setValor('');
+      setObservacoes('');
+      setData(null);
       navigation.navigate('ListaFretes');
     } catch (err) {
-      Alert.alert('Erro', 'Nao foi possivel salvar o frete.');
+      // Erro silencioso - salvo na fila mesmo assim
+      console.warn('Erro ao salvar frete (será sincronizado depois):', err);
+      navigation.navigate('ListaFretes');
     } finally {
       setSaving(false);
     }

@@ -1,135 +1,245 @@
 /**
- * Banco local SQLite (offline-first)
+ * Banco de dados Firebase Firestore
+ * Persistência offline com snapshot listener que preenche cache
  */
-import * as SQLite from 'expo-sqlite';
+import {
+  collection,
+  addDoc,
+  getDocs,
+  getDoc,
+  doc,
+  updateDoc,
+  deleteDoc,
+  onSnapshot,
+} from 'firebase/firestore';
+import { db } from './firebaseConfig';
 import { Frete, NovoFrete, EstatisticasFretes } from '../models/Frete';
 
-const DB_NAME = 'fretes.db';
+const COLECAO = 'fretes';
 
-const getDatabase = async () => SQLite.openDatabaseAsync(DB_NAME);
+// Cache local em memória para persistência offline
+let fretesCached: Frete[] = [];
+let cacheAtualizado = false;
 
+// Adicionar frete ao cache manualmente (para filas offline)
+export const addToCache = (frete: Frete) => {
+  // Evitar duplicatas
+  const exists = fretesCached.some(f => f.id === frete.id);
+  if (!exists) {
+    fretesCached.push(frete);
+    console.log(`✨ Frete adicionado ao cache local: ${frete.id}`);
+  }
+};
+
+// Remover frete do cache manualmente (para deletar offline)
+export const removeFromCache = (freteId: string) => {
+  const original = fretesCached.length;
+  fretesCached = fretesCached.filter(f => f.id !== freteId);
+  if (fretesCached.length < original) {
+    console.log(`🗑️ Frete removido do cache local: ${freteId}`);
+  }
+};
+
+// Inicializar listener para manter cache sempre atualizado
 export const initDatabase = async () => {
-  const db = await getDatabase();
-  await db.execAsync(`
-    CREATE TABLE IF NOT EXISTS fretes (
-      id TEXT PRIMARY KEY,
-      data TEXT NOT NULL,
-      origem TEXT NOT NULL,
-      destino TEXT NOT NULL,
-      valor REAL NOT NULL,
-      observacoes TEXT,
-      synced INTEGER DEFAULT 0,
-      createdAt INTEGER NOT NULL,
-      updatedAt INTEGER NOT NULL
+  try {
+    // Ativar listener que mantém cache sincronizado
+    onSnapshot(
+      collection(db, COLECAO),
+      (snapshot) => {
+        fretesCached = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            data: data.data,
+            origem: data.origem,
+            destino: data.destino,
+            valor: data.valor,
+            observacoes: data.observacoes || undefined,
+            synced: true,
+            createdAt: data.createdAt,
+            updatedAt: data.updatedAt,
+          };
+        });
+        cacheAtualizado = true;
+        console.log(`Firebase Firestore pronto - ${fretesCached.length} fretes em cache offline`);
+      },
+      (error: any) => {
+        console.error('Erro no listener de fretes:', error);
+        cacheAtualizado = true;
+      }
     );
-  `);
+  } catch (error) {
+    console.error('Erro ao inicializar database:', error);
+  }
 };
 
 export const criarFrete = async (novo: NovoFrete): Promise<Frete> => {
-  const db = await getDatabase();
-  const id = `frete_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-  const ts = Date.now();
-  const frete: Frete = {
-    id,
-    ...novo,
-    observacoes: novo.observacoes || undefined,
-    synced: false,
-    createdAt: ts,
-    updatedAt: ts,
-  };
-  await db.runAsync(
-    `INSERT INTO fretes (id, data, origem, destino, valor, observacoes, synced, createdAt, updatedAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [frete.id, frete.data, frete.origem, frete.destino, frete.valor, frete.observacoes || null, 0, ts, ts]
-  );
-  return frete;
+  try {
+    const ts = Date.now();
+    const freteData = {
+      data: novo.data,
+      origem: novo.origem,
+      destino: novo.destino,
+      valor: novo.valor,
+      observacoes: novo.observacoes || null,
+      createdAt: ts,
+      updatedAt: ts,
+    };
+
+    const docRef = await addDoc(collection(db, COLECAO), freteData);
+
+    return {
+      id: docRef.id,
+      ...novo,
+      observacoes: novo.observacoes,
+      synced: true,
+      createdAt: ts,
+      updatedAt: ts,
+    };
+  } catch (error) {
+    console.error('Erro ao criar frete:', error);
+    throw new Error('Não foi possível criar o frete. Verifique sua conexão.');
+  }
 };
 
 export const listarFretes = async (): Promise<Frete[]> => {
-  const db = await getDatabase();
-  const rows = await db.getAllAsync<any>('SELECT * FROM fretes ORDER BY data DESC, createdAt DESC');
-  return rows.map((r) => ({
-    id: r.id,
-    data: r.data,
-    origem: r.origem,
-    destino: r.destino,
-    valor: r.valor,
-    observacoes: r.observacoes || undefined,
-    synced: r.synced === 1,
-    createdAt: r.createdAt,
-    updatedAt: r.updatedAt,
-  }));
+  try {
+    // Sempre prioriza cache se temos dados
+    if (fretesCached.length > 0) {
+      console.log(`Retornando ${fretesCached.length} fretes do cache`);
+      return fretesCached.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    }
+
+    // Se cache está vazio mas foi atualizado (significa offline sem dados), retorna vazio
+    if (cacheAtualizado) {
+      return [];
+    }
+
+    // Tenta buscar da rede
+    const snapshot = await getDocs(collection(db, COLECAO));
+    const fretes = snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        data: data.data,
+        origem: data.origem,
+        destino: data.destino,
+        valor: data.valor,
+        observacoes: data.observacoes || undefined,
+        synced: true,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+      };
+    });
+
+    return fretes.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  } catch (error) {
+    console.error('Erro ao listar fretes:', error);
+    // Se falhar, retorna cache
+    return fretesCached;
+  }
 };
 
 export const buscarFretePorId = async (id: string): Promise<Frete | null> => {
-  const db = await getDatabase();
-  const r = await db.getFirstAsync<any>('SELECT * FROM fretes WHERE id = ?', [id]);
-  if (!r) return null;
-  return {
-    id: r.id,
-    data: r.data,
-    origem: r.origem,
-    destino: r.destino,
-    valor: r.valor,
-    observacoes: r.observacoes || undefined,
-    synced: r.synced === 1,
-    createdAt: r.createdAt,
-    updatedAt: r.updatedAt,
-  };
+  try {
+    // Tenta buscar do cache primeiro
+    const fretesCache = fretesCached.find(f => f.id === id);
+    if (fretesCache) {
+      console.log(`Frete ${id} encontrado em cache`);
+      return fretesCache;
+    }
+
+    // Se não estiver em cache, busca da rede
+    const docRef = doc(db, COLECAO, id);
+    const docSnap = await getDoc(docRef);
+
+    if (!docSnap.exists()) {
+      return null;
+    }
+
+    const data = docSnap.data();
+    return {
+      id: docSnap.id,
+      data: data.data,
+      origem: data.origem,
+      destino: data.destino,
+      valor: data.valor,
+      observacoes: data.observacoes || undefined,
+      synced: true,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+    };
+  } catch (error) {
+    console.error('Erro ao buscar frete:', error);
+    return null;
+  }
 };
 
 export const atualizarFrete = async (id: string, dados: Partial<NovoFrete>) => {
-  const db = await getDatabase();
-  const campos: string[] = [];
-  const valores: any[] = [];
-  if (dados.data !== undefined) { campos.push('data = ?'); valores.push(dados.data); }
-  if (dados.origem !== undefined) { campos.push('origem = ?'); valores.push(dados.origem); }
-  if (dados.destino !== undefined) { campos.push('destino = ?'); valores.push(dados.destino); }
-  if (dados.valor !== undefined) { campos.push('valor = ?'); valores.push(dados.valor); }
-  if (dados.observacoes !== undefined) { campos.push('observacoes = ?'); valores.push(dados.observacoes); }
-  campos.push('updatedAt = ?', 'synced = ?');
-  valores.push(Date.now(), 0, id);
-  await db.runAsync(`UPDATE fretes SET ${campos.join(', ')} WHERE id = ?`, valores);
+  try {
+    const docRef = doc(db, COLECAO, id);
+    const updateData: any = {
+      ...dados,
+      updatedAt: Date.now(),
+    };
+
+    await updateDoc(docRef, updateData);
+  } catch (error) {
+    console.error('Erro ao atualizar frete:', error);
+    throw new Error('Não foi possível atualizar o frete.');
+  }
 };
 
 export const deletarFrete = async (id: string) => {
-  const db = await getDatabase();
-  await db.runAsync('DELETE FROM fretes WHERE id = ?', [id]);
-};
-
-export const listarFretesNaoSincronizados = async (): Promise<Frete[]> => {
-  const db = await getDatabase();
-  const rows = await db.getAllAsync<any>('SELECT * FROM fretes WHERE synced = 0 ORDER BY createdAt ASC');
-  return rows.map((r) => ({
-    id: r.id,
-    data: r.data,
-    origem: r.origem,
-    destino: r.destino,
-    valor: r.valor,
-    observacoes: r.observacoes || undefined,
-    synced: false,
-    createdAt: r.createdAt,
-    updatedAt: r.updatedAt,
-  }));
-};
-
-export const marcarComoSincronizado = async (id: string) => {
-  const db = await getDatabase();
-  await db.runAsync('UPDATE fretes SET synced = 1 WHERE id = ?', [id]);
+  try {
+    const docRef = doc(db, COLECAO, id);
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.error('Erro ao deletar frete:', error);
+    throw new Error('Não foi possível deletar o frete.');
+  }
 };
 
 export const calcularEstatisticas = async (): Promise<EstatisticasFretes> => {
-  const db = await getDatabase();
-  const total = await db.getFirstAsync<any>('SELECT COUNT(*) as count, COALESCE(SUM(valor),0) as total FROM fretes');
-  const agora = new Date();
-  const mesAtual = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
-  const mes = await db.getFirstAsync<any>(
-    'SELECT COUNT(*) as count, COALESCE(SUM(valor),0) as total FROM fretes WHERE data LIKE ?',[`${mesAtual}%`]
-  );
-  return {
-    totalFaturado: total?.total || 0,
-    quantidadeFretes: total?.count || 0,
-    freteMesAtual: mes?.total || 0,
-    quantidadeMesAtual: mes?.count || 0,
-  };
+  try {
+    // Usar cache se disponível
+    const fretes = fretesCached.length > 0 ? fretesCached : await listarFretes();
+
+    let totalFaturado = 0;
+    let quantidadeFretes = 0;
+    let freteMesAtual = 0;
+    let quantidadeMesAtual = 0;
+
+    const agora = new Date();
+    const mesAtual = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
+
+    fretes.forEach((frete) => {
+      const valor = frete.valor || 0;
+      const dataStr = frete.data ? String(frete.data) : '';
+
+      totalFaturado += valor;
+      quantidadeFretes++;
+
+      if (dataStr && dataStr.startsWith(mesAtual)) {
+        freteMesAtual += valor;
+        quantidadeMesAtual++;
+      }
+    });
+
+    return {
+      totalFaturado,
+      quantidadeFretes,
+      freteMesAtual,
+      quantidadeMesAtual,
+    };
+  } catch (error) {
+    console.error('Erro ao calcular estatísticas:', error);
+    return {
+      totalFaturado: 0,
+      quantidadeFretes: 0,
+      freteMesAtual: 0,
+      quantidadeMesAtual: 0,
+    };
+  }
 };

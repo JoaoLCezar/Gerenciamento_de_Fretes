@@ -12,13 +12,11 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { Frete } from '../models/Frete';
 import { listarFretes } from '../services/database';
-import { sincronizarCompleto } from '../services/syncService';
 
 export default function ListaFretesScreen({ navigation }: any) {
   const [fretes, setFretes] = useState<Frete[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [syncing, setSyncing] = useState(false);
 
   const carregar = async () => {
     try {
@@ -36,27 +34,30 @@ export default function ListaFretesScreen({ navigation }: any) {
     }, [])
   );
 
-  const formatarMoeda = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const formatarMoeda = (v: number | undefined) => {
+    if (!v && v !== 0) return 'R$ 0,00';
+    return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  };
 
-  const sincronizar = async () => {
-    setSyncing(true);
-    await sincronizarCompleto();
-    await carregar();
-    setSyncing(false);
+  const formatarData = (dataISO: string | undefined) => {
+    if (!dataISO) return 'Data indefinida';
+    const [ano, mes, dia] = dataISO.split('-');
+    return `${dia}/${mes}/${ano}`;
   };
 
   const renderItem = ({ item }: { item: Frete }) => (
-    <View style={styles.card}>
+    <TouchableOpacity 
+      style={styles.card}
+      onPress={() => navigation.navigate('DetalheFrete', { freteId: item.id })}
+      activeOpacity={0.7}
+    >
       <View style={styles.cardHeader}>
         <Text style={styles.cardTitle}>{`${item.origem} -> ${item.destino}`}</Text>
-        <View style={[styles.badge, item.synced ? styles.badgeOk : styles.badgeWarn]}>
-          <Text style={styles.badgeText}>{item.synced ? 'Sincronizado' : 'Offline'}</Text>
-        </View>
       </View>
-      <Text style={styles.cardDate}>{item.data}</Text>
+      <Text style={styles.cardDate}>{item.data ? formatarData(item.data) : 'Data indefinida'}</Text>
       <Text style={styles.cardValue}>{formatarMoeda(item.valor)}</Text>
       {item.observacoes ? <Text style={styles.cardObs}>{item.observacoes}</Text> : null}
-    </View>
+    </TouchableOpacity>
   );
 
   if (loading) {
@@ -74,14 +75,6 @@ export default function ListaFretesScreen({ navigation }: any) {
         <TouchableOpacity style={styles.btnPrimary} onPress={() => navigation.navigate('NovoFrete')}>
           <Ionicons name="add" size={22} color="#FFF" />
           <Text style={styles.btnPrimaryText}>Novo frete</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.btnSecondary, syncing && styles.btnSecondaryDisabled]}
-          onPress={sincronizar}
-          disabled={syncing}
-        >
-          {syncing ? <ActivityIndicator size="small" color="#007AFF" /> : <Ionicons name="cloud-done" size={20} color="#007AFF" />}
-          <Text style={styles.btnSecondaryText}>{syncing ? 'Sincronizando...' : 'Sincronizar'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -122,20 +115,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   btnPrimaryText: { color: '#FFF', fontWeight: '600', fontSize: 16 },
-  btnSecondary: {
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    borderWidth: 2,
-    borderColor: '#007AFF',
-  },
-  btnSecondaryDisabled: { opacity: 0.6 },
-  btnSecondaryText: { color: '#007AFF', fontWeight: '600', fontSize: 14 },
   listContent: { padding: 12, paddingBottom: 30 },
   emptyContainer: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
   emptyText: { color: '#777', fontSize: 16 },
@@ -148,14 +127,6 @@ const styles = StyleSheet.create({
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   cardTitle: { fontSize: 16, fontWeight: '700', color: '#333' },
-  badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-  },
-  badgeOk: { backgroundColor: '#E8F5E9' },
-  badgeWarn: { backgroundColor: '#FFF3E0' },
-  badgeText: { fontSize: 12, fontWeight: '600', color: '#333' },
   cardDate: { marginTop: 6, color: '#666', fontSize: 13 },
   cardValue: { marginTop: 8, fontSize: 18, fontWeight: 'bold', color: '#007AFF' },
   cardObs: { marginTop: 6, color: '#555', fontSize: 14 },
