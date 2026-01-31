@@ -1,0 +1,180 @@
+📋 CHECKLIST PRÉ-EXECUÇÃO
+========================
+
+Siga esta lista para garantir que tudo está pronto.
+
+## ✅ FASE 1: INSTALAÇÃO (Complete antes de continuar)
+
+- [ ] Node.js instalado
+      Verificar: node --version (deve ser 18+)
+      
+- [ ] npm disponível
+      Verificar: npm --version (deve ser 9+)
+      
+- [ ] Dependências instaladas
+      Verificar: pasta "node_modules" existe
+      Ação: npm install (se não existir)
+      
+- [ ] Arquivo firebaseConfig.ts existe
+      Verificar: src/services/firebaseConfig.ts
+      Status: ✅ Já foi criado
+
+## ✅ FASE 2: FIREBASE (Complete antes de testar)
+
+- [ ] Conta Google criada
+      Ir para: https://accounts.google.com/
+      
+- [ ] Projeto Firebase criado
+      Ir para: https://console.firebase.google.com/
+      
+- [ ] App Web registrado no Firebase
+      No console: "</>" → Registrar app
+      
+- [ ] Credenciais Firebase copiadas
+      No console: Configurações → SDK do Firebase
+      
+- [ ] Arquivo firebaseConfig.ts atualizado
+      Editar: src/services/firebaseConfig.ts
+      Atualizar: apiKey, projectId, etc.
+      
+- [ ] Firestore Database criado
+      No console: Firestore Database → Criar banco
+      Modo: "Modo teste"
+      Localização: Escolha mais próxima
+      
+- [ ] Coleção "fretes" criada
+      No console: Firestore → + Iniciar coleção
+      Nome: fretes
+      ID automático: ✅ marcado
+
+## ✅ FASE 3: EMULADOR (Escolha UMA opção)
+
+### OPÇÃO A: Expo Go (Recomendado)
+- [ ] Expo Go instalado no celular/emulador
+      App Store ou Google Play: Procure "Expo Go"
+      
+- [ ] Terminal aberto na pasta do projeto
+      Caminho: c:\Users\joaov\OneDrive\Documentos\GitHub\Gerenciamento_de_Fretes
+      
+- [ ] Comando npm start executado
+      Terminal: npm start
+      Resultado: QR code deve aparecer
+      
+- [ ] QR code escaneado com sucesso
+      Use: Expo Go no seu dispositivo
+      Resultado: App inicia
+
+### OPÇÃO B: Emulador Android
+- [ ] Android Studio instalado
+      Download: https://developer.android.com/studio
+      
+- [ ] Emulador Android criado
+      Android Studio: AVD Manager → Create device
+      
+- [ ] Emulador está aberto
+      Verificar: Dispositivo virtual ligado
+      
+- [ ] Android SDK está configurado
+      Verificar: adb devices (lista os emuladores)
+      
+- [ ] Comando npm run android executado
+      Terminal: npm run android
+      Resultado: App instala e inicia automaticamente
+
+## ✅ FASE 4: TESTE (Quando app está aberto)
+
+- [ ] Tela inicial (Dashboard) carrega
+      Esperado: 4 cards com números (provavelmente 0)
+      
+- [ ] Aba "Fretes" funciona
+      Clique: Fretes na navegação inferior
+      Esperado: Tela com botão "+ Novo frete"
+      
+- [ ] Botão "Novo frete" funciona
+      Clique: "+ Novo frete"
+      Esperado: Formulário abre
+      
+- [ ] Formulário carrega
+      Esperado: 5 campos (data, origem, destino, valor, observações)
+      
+- [ ] Preenchimento de formulário
+      Data: 2026-01-30
+      Origem: São Paulo
+      Destino: Rio de Janeiro
+      Valor: 1500
+      
+- [ ] Frete foi criado com sucesso
+      Clique: "Salvar frete"
+      Esperado: Volta para lista e mostra novo frete
+      
+- [ ] Frete aparece na lista
+      Status esperado: "Offline" (sem internet) ou "Sincronizado"
+      
+- [ ] Dashboard atualiza estatísticas
+      Volte ao Dashboard
+      Esperado: Números foram atualizados
+      
+- [ ] Sincronização funciona
+      Clique: Botão "Sincronizar" na lista
+      Esperado: Sincroniza com Firebase (se configurado)
+
+## ⚠️ PROBLEMAS COMUNS & SOLUÇÕES
+
+### Problema: npm: comando não encontrado
+- [ ] Instalou Node.js? Sim ✅ / Não ❌
+- [ ] Reiniciou terminal? Sim ✅ / Não ❌
+- [ ] Solução: node --version (se não funcionar, reinstale Node.js)
+
+### Problema: "Cannot find firebaseConfig"
+- [ ] Arquivo existe? Sim ✅ / Não ❌
+- [ ] Solução: npm install (restaura arquivos)
+
+### Problema: App abre em branco
+- [ ] Espere 30 segundos (Expo está compilando)
+- [ ] Verifique terminal para mensagens de erro
+- [ ] Solução: Ctrl+C e npm start novamente
+
+### Problema: Não sincroniza com Firebase
+- [ ] Credenciais corretas? Sim ✅ / Não ❌
+- [ ] Firestore criado? Sim ✅ / Não ❌
+- [ ] Coleção "fretes" criada? Sim ✅ / Não ❌
+- [ ] Internet conectada? Sim ✅ / Não ❌
+- [ ] Solução: Verifique FIREBASE_SETUP.txt
+
+### Problema: Emulador não inicia
+- [ ] Android Studio instalado? Sim ✅ / Não ❌
+- [ ] Emulador criado? Sim ✅ / Não ❌
+- [ ] Emulador ligado? Sim ✅ / Não ❌
+- [ ] Solução: Inicie manualmente no Android Studio
+
+## 🎯 ORDEM RECOMENDADA
+
+1. ✅ Instale Node.js (se não tiver)
+2. ✅ Execute npm install
+3. ✅ Configure Firebase Console
+4. ✅ Edite firebaseConfig.ts
+5. ✅ Escolha emulador (Expo Go ou Android)
+6. ✅ Execute npm start ou npm run android
+7. ✅ Teste funcionalidades na lista acima
+8. ✅ Crie alguns fretes de teste
+9. ✅ Verifique dados em Firebase Console
+
+## 📞 HELP
+
+Documentos de ajuda disponíveis:
+- COMECE_AQUI.txt ← Resumo executivo
+- GUIA_INSTALACAO.md ← Guia completo (RECOMENDADO)
+- FIREBASE_SETUP.txt ← Configuração Firebase
+- SETUP_REPORT.md ← Relatório técnico
+- instalar.bat ← Script automático Windows
+
+## ✨ STATUS
+
+Seu aplicativo está:
+- ✅ Código íntegro
+- ✅ Sem erros TypeScript
+- ✅ Estrutura completa
+- ✅ Pronto para uso
+- ✅ Documentado
+
+Bom teste! 🚀

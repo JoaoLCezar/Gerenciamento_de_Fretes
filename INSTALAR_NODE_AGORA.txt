@@ -1,0 +1,350 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║  ⚠️  PROBLEMA IDENTIFICADO: NODE.JS NÃO ESTÁ INSTALADO ⚠️       ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+🔴 DIAGNÓSTICO:
+   Node.js e npm NÃO estão instalados no seu computador.
+   Por isso o aplicativo não consegue rodar.
+
+✅ SOLUÇÃO: Instalar Node.js (PASSO-A-PASSO SIMPLES)
+
+═══════════════════════════════════════════════════════════════════
+
+🚀 PASSO 1: BAIXAR NODE.JS (2 minutos)
+═══════════════════════════════════════════════════════════════════
+
+1. Abra seu navegador (Chrome, Edge, etc.)
+
+2. Acesse o link:
+   https://nodejs.org/
+
+3. Você verá 2 botões verdes:
+   ┌─────────────────────┬─────────────────────┐
+   │  22.x.x LTS         │  24.x.x Current     │
+   │  Recomendado        │  Mais recente       │
+   └─────────────────────┴─────────────────────┘
+
+4. CLIQUE no botão da ESQUERDA:
+   "22.x.x LTS (Recomendado para a maioria)"
+
+5. O download começará automaticamente
+   Arquivo: node-v22.x.x-x64.msi (aprox. 30 MB)
+
+═══════════════════════════════════════════════════════════════════
+
+🚀 PASSO 2: INSTALAR NODE.JS (3 minutos)
+═══════════════════════════════════════════════════════════════════
+
+1. Quando o download terminar, clique duplo no arquivo baixado
+   (node-v22.x.x-x64.msi)
+
+2. Na tela de instalação:
+   ┌─────────────────────────────────────────┐
+   │  Welcome to Node.js Setup Wizard        │
+   │                                         │
+   │  [ Next > ]                             │
+   └─────────────────────────────────────────┘
+   → Clique "Next"
+
+3. Aceite os termos:
+   ┌─────────────────────────────────────────┐
+   │  [X] I accept the terms                 │
+   │                                         │
+   │  [ Next > ]                             │
+   └─────────────────────────────────────────┘
+   → Marque a caixa
+   → Clique "Next"
+
+4. Local de instalação:
+   ┌─────────────────────────────────────────┐
+   │  C:\Program Files\nodejs\               │
+   │                                         │
+   │  [ Next > ]                             │
+   └─────────────────────────────────────────┘
+   → Deixe como está
+   → Clique "Next"
+
+5. Componentes (IMPORTANTE!):
+   ┌─────────────────────────────────────────┐
+   │  [X] Node.js runtime                    │
+   │  [X] npm package manager                │
+   │  [X] Add to PATH                        │
+   │  [ ] Tools for Native Modules           │
+   │                                         │
+   │  [ Next > ]                             │
+   └─────────────────────────────────────────┘
+   → Deixe TUDO MARCADO
+   → Clique "Next"
+
+6. Ferramentas adicionais (opcional):
+   ┌─────────────────────────────────────────┐
+   │  [ ] Automatically install tools        │
+   │                                         │
+   │  [ Next > ]                             │
+   └─────────────────────────────────────────┘
+   → NÃO marque esta caixa (não é necessário)
+   → Clique "Next"
+
+7. Instalar:
+   ┌─────────────────────────────────────────┐
+   │  Ready to install                       │
+   │                                         │
+   │  [ Install ]                            │
+   └─────────────────────────────────────────┘
+   → Clique "Install"
+   → Aguarde a instalação (1-2 minutos)
+
+8. Concluir:
+   ┌─────────────────────────────────────────┐
+   │  Installation Complete                  │
+   │                                         │
+   │  [ Finish ]                             │
+   └─────────────────────────────────────────┘
+   → Clique "Finish"
+
+═══════════════════════════════════════════════════════════════════
+
+🚀 PASSO 3: REINICIAR TERMINAL (1 minuto)
+═══════════════════════════════════════════════════════════════════
+
+IMPORTANTE: Você PRECISA fechar e reabrir o VS Code!
+
+1. No VS Code, vá em:
+   File → Exit
+   (ou pressione Alt+F4)
+
+2. Reabra o VS Code
+
+3. Reabra o terminal:
+   Terminal → New Terminal
+   (ou pressione Ctrl+Shift+`)
+
+═══════════════════════════════════════════════════════════════════
+
+🚀 PASSO 4: VERIFICAR INSTALAÇÃO (1 minuto)
+═══════════════════════════════════════════════════════════════════
+
+No terminal do VS Code, digite cada comando e pressione Enter:
+
+1. node --version
+   Resultado esperado: v22.x.x (ou similar)
+
+2. npm --version
+   Resultado esperado: 10.x.x (ou similar)
+
+Se aparecer a versão em vez de erro, SUCESSO! ✅
+
+═══════════════════════════════════════════════════════════════════
+
+🚀 PASSO 5: INSTALAR DEPENDÊNCIAS DO PROJETO (3 minutos)
+═══════════════════════════════════════════════════════════════════
+
+Agora que Node.js está instalado, instale as dependências:
+
+OPÇÃO A - Automático (Recomendado):
+   1. No Windows Explorer, abra a pasta:
+      c:\Users\joaov\OneDrive\Documentos\GitHub\Gerenciamento_de_Fretes
+   
+   2. Clique duplo em:
+      instalar.bat
+   
+   3. Aguarde a instalação completar
+
+OPÇÃO B - Manual:
+   1. No terminal do VS Code, digite:
+      npm install
+   
+   2. Pressione Enter
+   
+   3. Aguarde (pode demorar 2-5 minutos)
+
+═══════════════════════════════════════════════════════════════════
+
+🚀 PASSO 6: CONFIGURAR FIREBASE (10 minutos)
+═══════════════════════════════════════════════════════════════════
+
+1. Acesse: https://console.firebase.google.com/
+
+2. Clique "Criar projeto"
+
+3. Nome do projeto: "Gerenciamento-Fretes"
+   → Clique "Continuar"
+
+4. Google Analytics: Desmarque se não quiser
+   → Clique "Criar projeto"
+
+5. Aguarde a criação (30 segundos)
+
+6. Quando criado, clique "Continuar"
+
+7. Na tela inicial, clique no ícone "</>" (Web)
+
+8. Nome do app: "Gerenciamento de Fretes"
+   → Marque "Também configure o Hosting"
+   → Clique "Registrar app"
+
+9. Você verá um código assim:
+   const firebaseConfig = {
+     apiKey: "AIza...",
+     authDomain: "gerenciamento-fretes-xxxxx.firebaseapp.com",
+     projectId: "gerenciamento-fretes-xxxxx",
+     storageBucket: "gerenciamento-fretes-xxxxx.appspot.com",
+     messagingSenderId: "123456789",
+     appId: "1:123456789:web:abc123"
+   };
+
+10. COPIE todo esse bloco (Ctrl+C)
+
+11. No VS Code, abra:
+    src/services/firebaseConfig.ts
+
+12. Substitua o conteúdo do firebaseConfig pelas suas credenciais
+
+13. Salve (Ctrl+S)
+
+14. No Firebase Console, clique "Ir para o console"
+
+15. No menu lateral, clique "Firestore Database"
+
+16. Clique "Criar banco de dados"
+
+17. Modo: "Iniciar no modo de teste"
+    → Clique "Avançar"
+
+18. Localização: "southamerica-east1 (São Paulo)"
+    → Clique "Ativar"
+
+19. Aguarde a criação (1 minuto)
+
+20. Clique "+ Iniciar coleção"
+
+21. ID da coleção: "fretes"
+    → Clique "Avançar"
+
+22. ID do documento: Deixe "ID automático"
+    → Clique "Salvar"
+
+PRONTO! Firebase configurado! ✅
+
+═══════════════════════════════════════════════════════════════════
+
+🚀 PASSO 7: INICIAR O APLICATIVO (2 minutos)
+═══════════════════════════════════════════════════════════════════
+
+OPÇÃO A - Expo Go (MAIS FÁCIL):
+
+   1. No terminal do VS Code, digite:
+      npm start
+
+   2. Aguarde o QR code aparecer
+
+   3. No seu celular:
+      - Android: Instale "Expo Go" da Google Play
+      - iPhone: Instale "Expo Go" da App Store
+
+   4. Abra o Expo Go e escaneie o QR code
+
+   5. Aguarde o app carregar (pode demorar 1-2 minutos na primeira vez)
+
+OPÇÃO B - Emulador Android (Mais complexo):
+
+   1. Instale Android Studio:
+      https://developer.android.com/studio
+
+   2. Configure um emulador Android
+
+   3. Inicie o emulador
+
+   4. No terminal, digite:
+      npm run android
+
+   5. Aguarde o app instalar e abrir
+
+═══════════════════════════════════════════════════════════════════
+
+✅ TESTE O APLICATIVO
+═══════════════════════════════════════════════════════════════════
+
+Quando o app abrir:
+
+1. Dashboard:
+   ✅ Deve mostrar 4 cards com números (inicialmente 0)
+
+2. Aba "Fretes":
+   ✅ Clique para ver a lista (vazia inicialmente)
+
+3. Botão "+ Novo frete":
+   ✅ Clique para abrir o formulário
+
+4. Preencha:
+   Data: 2026-01-31
+   Origem: São Paulo
+   Destino: Rio de Janeiro
+   Valor: 1500
+   Observações: Teste
+
+5. Clique "Salvar frete"
+   ✅ Deve voltar à lista e mostrar o frete criado
+
+6. Volte ao Dashboard:
+   ✅ Estatísticas devem ter sido atualizadas
+
+7. Clique "Sincronizar":
+   ✅ Se Firebase configurado, sincroniza com nuvem
+
+═══════════════════════════════════════════════════════════════════
+
+❓ PROBLEMAS COMUNS
+═══════════════════════════════════════════════════════════════════
+
+PROBLEMA: "npm install" está demorando muito
+SOLUÇÃO: É normal na primeira vez. Aguarde até 5 minutos.
+
+PROBLEMA: Erro ao instalar dependências
+SOLUÇÃO: 
+   1. Delete a pasta "node_modules" (se existir)
+   2. Delete o arquivo "package-lock.json" (se existir)
+   3. Execute novamente: npm install
+
+PROBLEMA: App não abre no Expo Go
+SOLUÇÃO:
+   1. Verifique se celular e PC estão na mesma rede Wi-Fi
+   2. Tente fechar e reabrir o terminal
+   3. Execute novamente: npm start
+
+PROBLEMA: Erro no Firebase
+SOLUÇÃO:
+   1. Verifique se copiou TODAS as credenciais
+   2. Verifique se criou a coleção "fretes"
+   3. Verifique se está no "modo teste"
+
+═══════════════════════════════════════════════════════════════════
+
+📞 AJUDA ADICIONAL
+═══════════════════════════════════════════════════════════════════
+
+Documentos disponíveis na pasta do projeto:
+- GUIA_INSTALACAO.md
+- FIREBASE_SETUP.txt
+- CHECKLIST.txt
+- SETUP_REPORT.md
+
+═══════════════════════════════════════════════════════════════════
+
+🎯 RESUMO DO QUE FAZER AGORA:
+
+1. ✅ Baixar Node.js de https://nodejs.org/
+2. ✅ Instalar Node.js (Next → Next → Install)
+3. ✅ Fechar e reabrir VS Code
+4. ✅ Verificar: node --version
+5. ✅ Instalar dependências: npm install
+6. ✅ Configurar Firebase Console
+7. ✅ Editar src/services/firebaseConfig.ts
+8. ✅ Iniciar app: npm start
+9. ✅ Testar no celular com Expo Go
+
+TEMPO TOTAL ESTIMADO: 30-40 minutos
+
+═══════════════════════════════════════════════════════════════════
+
+Boa sorte! 🚀

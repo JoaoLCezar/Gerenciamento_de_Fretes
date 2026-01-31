@@ -1,0 +1,55 @@
+# Configuração do Firebase
+# ========================
+# Este arquivo contém dados sensíveis. NÃO COMMITAR PARA GIT!
+
+IMPORTANTE:
+1. Acesse https://console.firebase.google.com/
+2. Clique em "Criar projeto"
+3. Preencha os dados do projeto
+4. Clique em "Criar"
+5. Vá para "Visão geral do projeto"
+6. Clique em "</>" para criar uma aplicação Web
+7. Registre a aplicação
+8. Copie o objeto firebaseConfig
+9. Substitua abaixo e em src/services/firebaseConfig.ts
+
+ESTRUTURA DO FIREBASECONFIG:
+- apiKey: Chave da API (pública)
+- authDomain: Domínio de autenticação (ex: meu-projeto.firebaseapp.com)
+- projectId: ID do projeto (ex: meu-projeto-12345)
+- storageBucket: Bucket de armazenamento (ex: meu-projeto.appspot.com)
+- messagingSenderId: ID do remetente (número grande)
+- appId: ID da aplicação
+
+PRÓXIMAS ETAPAS APÓS CONFIGURAR:
+
+1. Habilitar Firestore Database:
+   - No console Firebase, clique em "Firestore Database"
+   - Clique em "Criar banco de dados"
+   - Escolha "Modo teste" para desenvolvimento
+   - Escolha localização mais próxima
+
+2. Criar coleção "fretes":
+   - Clique em "Iniciar coleção"
+   - Nome: "fretes"
+   - Clique em "Próximo"
+   - Deixe geração de ID automática
+   - Adicione um documento de exemplo se desejar
+
+3. Testar no App:
+   - Execute: npm start
+   - Crie um novo frete
+   - Clique em "Sincronizar"
+   - Verifique em Firestore se os dados aparecem
+
+SEGURANÇA (Importante para produção):
+- Adicionar autenticação (Firebase Auth)
+- Configurar Regras de Firestore para proteger dados:
+  rules_version = '2';
+  service cloud.firestore {
+    match /databases/{database}/documents {
+      match /fretes/{document=**} {
+        allow read, write: if request.auth != null;
+      }
+    }
+  }
