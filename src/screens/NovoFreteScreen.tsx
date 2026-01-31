@@ -12,15 +12,31 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { criarFrete } from '../services/database';
 
 export default function NovoFreteScreen({ navigation }: any) {
-  const [data, setData] = useState('');
+  const [data, setData] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [origem, setOrigem] = useState('');
   const [destino, setDestino] = useState('');
   const [valor, setValor] = useState('');
   const [observacoes, setObservacoes] = useState('');
   const [saving, setSaving] = useState(false);
+
+  const formatarData = (d: Date) => {
+    const dia = String(d.getDate()).padStart(2, '0');
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const ano = d.getFullYear();
+    return `${dia}/${mes}/${ano}`;
+  };
+
+  const formatarDataISO = (d: Date) => {
+    const dia = String(d.getDate()).padStart(2, '0');
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const ano = d.getFullYear();
+    return `${ano}-${mes}-${dia}`;
+  };
 
   const salvar = async () => {
     if (!data || !origem || !destino || !valor) {
@@ -37,7 +53,7 @@ export default function NovoFreteScreen({ navigation }: any) {
     setSaving(true);
     try {
       await criarFrete({
-        data,
+        data: formatarDataISO(data),
         origem,
         destino,
         valor: valorNumber,
@@ -57,14 +73,33 @@ export default function NovoFreteScreen({ navigation }: any) {
         <Text style={styles.title}>Cadastrar frete</Text>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Data (AAAA-MM-DD)</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="2024-05-10"
-            value={data}
-            onChangeText={setData}
-            autoCapitalize="none"
-          />
+          <Text style={styles.label}>Data (DD/MM/AAAA)</Text>
+          <TouchableOpacity
+            style={[styles.input, styles.dateInput]}
+            onPress={() => setShowDatePicker(true)}
+            activeOpacity={0.7}
+          >
+            <Text style={data ? styles.dateText : styles.datePlaceholder}>
+              {data ? formatarData(data) : 'Selecionar data'}
+            </Text>
+            <Ionicons name="calendar" size={20} color="#007AFF" />
+          </TouchableOpacity>
+          {showDatePicker && (
+            <DateTimePicker
+              value={data ?? new Date()}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={(_, selectedDate) => {
+                if (Platform.OS !== 'ios') setShowDatePicker(false);
+                if (selectedDate) setData(selectedDate);
+              }}
+            />
+          )}
+          {showDatePicker && Platform.OS === 'ios' ? (
+            <TouchableOpacity style={styles.dateDone} onPress={() => setShowDatePicker(false)}>
+              <Text style={styles.dateDoneText}>OK</Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
 
         <View style={styles.inline}>
@@ -123,6 +158,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E0E0E0',
   },
+  dateInput: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  dateText: { color: '#333', fontSize: 16 },
+  datePlaceholder: { color: '#999', fontSize: 16 },
+  dateDone: {
+    marginTop: 8,
+    alignSelf: 'flex-end',
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  dateDoneText: { color: '#FFF', fontWeight: '700' },
   inline: { flexDirection: 'row', gap: 10 },
   inlineItem: { flex: 1 },
   textArea: { height: 100, textAlignVertical: 'top' },
