@@ -5,13 +5,16 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { EstatisticasFretes } from '../models/Frete';
 import { calcularEstatisticas } from '../services/database';
+import { useTheme } from '../context/ThemeContext';
 
 export default function HomeScreen({ navigation }: any) {
+  const { theme, toggleTheme, isDark } = useTheme();
   const [stats, setStats] = useState<EstatisticasFretes>({
     totalFaturado: 0,
     quantidadeFretes: 0,
     freteMesAtual: 0,
     quantidadeMesAtual: 0,
+    totalSaldo: 0,
   });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -39,70 +42,85 @@ export default function HomeScreen({ navigation }: any) {
 
   if (loading) {
     return (
-      <View style={styles.loading}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Carregando...</Text>
+      <View style={[styles.loading, { backgroundColor: theme.colors.background }]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>Carregando...</Text>
       </View>
     );
   }
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); carregar(); }} />}
     >
-      <View style={styles.header}>
-        <Text style={styles.title}>Dashboard</Text>
-        <Text style={styles.subtitle}>Gestão de Fretes</Text>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>📊 Totais Gerais</Text>
-        <View style={styles.cardBig}>
-          <Ionicons name="cash-outline" size={40} color="#4CAF50" />
-          <View style={styles.cardContent}>
-            <Text style={styles.cardLabel}>Total Faturado</Text>
-            <Text style={styles.cardValueBig}>{formatarMoeda(stats.totalFaturado)}</Text>
+      <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
+        <View style={styles.headerTop}>
+          <View>
+            <Text style={styles.title}>Dashboard</Text>
+            <Text style={styles.subtitle}>Gestão de Fretes</Text>
           </View>
-        </View>
-
-        <View style={styles.cardSmall}>
-          <Ionicons name="file-tray-full-outline" size={30} color="#2196F3" />
-          <View style={styles.cardContent}>
-            <Text style={styles.cardLabel}>Total de Fretes</Text>
-            <Text style={styles.cardValue}>{stats.quantidadeFretes}</Text>
-          </View>
+          <TouchableOpacity onPress={toggleTheme} style={styles.themeButton}>
+            <Ionicons name={isDark ? 'sunny' : 'moon'} size={24} color={theme.colors.textOnPrimary} />
+          </TouchableOpacity>
         </View>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>📅 Mês Atual</Text>
-        <View style={styles.cardMedium}>
-          <Ionicons name="trending-up-outline" size={35} color="#FF9800" />
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>📊 Totais Gerais</Text>
+        <View style={[styles.cardBig, { backgroundColor: theme.colors.card }]}>
+          <Ionicons name="cash-outline" size={40} color={theme.colors.success} />
           <View style={styles.cardContent}>
-            <Text style={styles.cardLabel}>Faturado no Mês</Text>
-            <Text style={styles.cardValueMed}>{formatarMoeda(stats.freteMesAtual)}</Text>
+            <Text style={[styles.cardLabel, { color: theme.colors.textSecondary }]}>Total Faturado</Text>
+            <Text style={[styles.cardValueBig, { color: theme.colors.success }]}>{formatarMoeda(stats.totalFaturado)}</Text>
           </View>
         </View>
 
-        <View style={styles.cardSmall}>
+        <View style={[styles.cardSmall, { backgroundColor: theme.colors.card }]}>
+          <Ionicons name="file-tray-full-outline" size={30} color={theme.colors.info} />
+          <View style={styles.cardContent}>
+            <Text style={[styles.cardLabel, { color: theme.colors.textSecondary }]}>Total de Fretes</Text>
+            <Text style={[styles.cardValue, { color: theme.colors.info }]}>{stats.quantidadeFretes}</Text>
+          </View>
+        </View>
+
+        <View style={[styles.cardMedium, { backgroundColor: theme.colors.card }]}>
+          <Ionicons name="wallet-outline" size={35} color={theme.colors.error} />
+          <View style={styles.cardContent}>
+            <Text style={[styles.cardLabel, { color: theme.colors.textSecondary }]}>Saldo Total a Receber</Text>
+            <Text style={[styles.cardValueSaldo, { color: theme.colors.error }]}>{formatarMoeda(stats.totalSaldo)}</Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>📅 Mês Atual</Text>
+        <View style={[styles.cardMedium, { backgroundColor: theme.colors.card }]}>
+          <Ionicons name="trending-up-outline" size={35} color={theme.colors.warning} />
+          <View style={styles.cardContent}>
+            <Text style={[styles.cardLabel, { color: theme.colors.textSecondary }]}>Faturado no Mês</Text>
+            <Text style={[styles.cardValueMed, { color: theme.colors.warning }]}>{formatarMoeda(stats.freteMesAtual)}</Text>
+          </View>
+        </View>
+
+        <View style={[styles.cardSmall, { backgroundColor: theme.colors.card }]}>
           <Ionicons name="calendar-outline" size={30} color="#9C27B0" />
           <View style={styles.cardContent}>
-            <Text style={styles.cardLabel}>Fretes no Mês</Text>
-            <Text style={styles.cardValue}>{stats.quantidadeMesAtual}</Text>
+            <Text style={[styles.cardLabel, { color: theme.colors.textSecondary }]}>Fretes no Mês</Text>
+            <Text style={[styles.cardValue, { color: theme.colors.info }]}>{stats.quantidadeMesAtual}</Text>
           </View>
         </View>
       </View>
 
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.btnPrimary} onPress={() => navigation.navigate('NovoFrete')}>
-          <Ionicons name="add-circle" size={24} color="#FFF" />
-          <Text style={styles.btnPrimaryText}>Novo Frete</Text>
+        <TouchableOpacity style={[styles.btnPrimary, { backgroundColor: theme.colors.primary }]} onPress={() => navigation.navigate('NovoFrete')}>
+          <Ionicons name="add-circle" size={24} color={theme.colors.textOnPrimary} />
+          <Text style={[styles.btnPrimaryText, { color: theme.colors.textOnPrimary }]}>Novo Frete</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.btnSecondary} onPress={() => navigation.navigate('ListaFretes')}>
-          <Ionicons name="list" size={24} color="#007AFF" />
-          <Text style={styles.btnSecondaryText}>Ver Todos</Text>
+        <TouchableOpacity style={[styles.btnSecondary, { backgroundColor: theme.colors.card, borderColor: theme.colors.primary }]} onPress={() => navigation.navigate('ListaFretes')}>
+          <Ionicons name="list" size={24} color={theme.colors.primary} />
+          <Text style={[styles.btnSecondaryText, { color: theme.colors.primary }]}>Ver Todos</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -110,25 +128,28 @@ export default function HomeScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F5F5' },
-  loading: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F5F5F5' },
-  loadingText: { marginTop: 10, fontSize: 16, color: '#666' },
-  header: { backgroundColor: '#007AFF', padding: 20, paddingTop: 60, paddingBottom: 30 },
+  container: { flex: 1 },
+  loading: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  loadingText: { marginTop: 10, fontSize: 16 },
+  header: { padding: 20, paddingTop: 60, paddingBottom: 30 },
+  headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  themeButton: { padding: 8 },
   title: { fontSize: 32, fontWeight: 'bold', color: '#FFF' },
   subtitle: { fontSize: 16, color: '#E3F2FD', marginTop: 5 },
   section: { padding: 15 },
-  sectionTitle: { fontSize: 18, fontWeight: '600', color: '#333', marginBottom: 15 },
-  cardBig: { backgroundColor: '#FFF', borderRadius: 12, padding: 20, marginBottom: 15, flexDirection: 'row', alignItems: 'center', elevation: 3 },
-  cardMedium: { backgroundColor: '#FFF', borderRadius: 12, padding: 18, marginBottom: 15, flexDirection: 'row', alignItems: 'center', elevation: 3 },
-  cardSmall: { backgroundColor: '#FFF', borderRadius: 12, padding: 15, marginBottom: 10, flexDirection: 'row', alignItems: 'center', elevation: 3 },
+  sectionTitle: { fontSize: 18, fontWeight: '600', marginBottom: 15 },
+  cardBig: { borderRadius: 12, padding: 20, marginBottom: 15, flexDirection: 'row', alignItems: 'center', elevation: 3 },
+  cardMedium: { borderRadius: 12, padding: 18, marginBottom: 15, flexDirection: 'row', alignItems: 'center', elevation: 3 },
+  cardSmall: { borderRadius: 12, padding: 15, marginBottom: 10, flexDirection: 'row', alignItems: 'center', elevation: 3 },
   cardContent: { marginLeft: 15, flex: 1 },
-  cardLabel: { fontSize: 14, color: '#666', marginBottom: 5 },
-  cardValueBig: { fontSize: 28, fontWeight: 'bold', color: '#4CAF50' },
-  cardValueMed: { fontSize: 24, fontWeight: 'bold', color: '#FF9800' },
-  cardValue: { fontSize: 20, fontWeight: 'bold', color: '#2196F3' },
+  cardLabel: { fontSize: 14, marginBottom: 5 },
+  cardValueBig: { fontSize: 28, fontWeight: 'bold' },
+  cardValueMed: { fontSize: 24, fontWeight: 'bold' },
+  cardValue: { fontSize: 20, fontWeight: 'bold' },
+  cardValueSaldo: { fontSize: 24, fontWeight: 'bold' },
   actions: { padding: 15, gap: 10 },
-  btnPrimary: { backgroundColor: '#007AFF', borderRadius: 12, padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
-  btnPrimaryText: { color: '#FFF', fontSize: 18, fontWeight: '600' },
-  btnSecondary: { backgroundColor: '#FFF', borderRadius: 12, padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderWidth: 2, borderColor: '#007AFF' },
-  btnSecondaryText: { color: '#007AFF', fontSize: 18, fontWeight: '600' },
+  btnPrimary: { borderRadius: 12, padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  btnPrimaryText: { fontSize: 18, fontWeight: '600' },
+  btnSecondary: { borderRadius: 12, padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderWidth: 2 },
+  btnSecondaryText: { fontSize: 18, fontWeight: '600' },
 });

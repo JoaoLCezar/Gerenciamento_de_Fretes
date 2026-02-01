@@ -14,8 +14,11 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { criarFreteComFila } from '../services/offlineQueue';
+import { calcularStatusPagamento } from '../utils/statusHelper';
+import { useTheme } from '../context/ThemeContext';
 
 export default function NovoFreteScreen({ navigation }: any) {
+  const { theme } = useTheme();
   const [data, setData] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [origem, setOrigem] = useState('');
@@ -70,11 +73,6 @@ export default function NovoFreteScreen({ navigation }: any) {
       }
     }
 
-    // Calcular saldo automaticamente se não for informado
-    if (!saldo.trim() && adiantamento.trim()) {
-      saldoNumber = valorTotalNumber - adiantamentoNumber;
-    }
-
     setSaving(true);
     try {
       const freteData: any = {
@@ -93,6 +91,14 @@ export default function NovoFreteScreen({ navigation }: any) {
       if (observacoes.trim()) {
         freteData.observacoes = observacoes.trim();
       }
+      
+      // Calcular status de pagamento
+      freteData.statusPagamento = calcularStatusPagamento(
+        valorTotalNumber,
+        adiantamentoNumber > 0 ? adiantamentoNumber : undefined,
+        saldoNumber > 0 ? saldoNumber : undefined
+      );
+      
       await criarFreteComFila(freteData);
       // Sucesso silencioso - sem Alert
       setOrigem('');
@@ -113,21 +119,21 @@ export default function NovoFreteScreen({ navigation }: any) {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Cadastrar frete</Text>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: theme.colors.background }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <Text style={[styles.title, { color: theme.colors.text }]}>Cadastrar frete</Text>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Data (DD/MM/AAAA)</Text>
+          <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Data (DD/MM/AAAA)</Text>
           <TouchableOpacity
-            style={[styles.input, styles.dateInput]}
+            style={[styles.input, styles.dateInput, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.inputBorder }]}
             onPress={() => setShowDatePicker(true)}
             activeOpacity={0.7}
           >
-            <Text style={data ? styles.dateText : styles.datePlaceholder}>
+            <Text style={data ? [styles.dateText, { color: theme.colors.text }] : [styles.datePlaceholder, { color: theme.colors.placeholder }]}>
               {data ? formatarData(data) : 'Selecionar data'}
             </Text>
-            <Ionicons name="calendar" size={20} color="#007AFF" />
+            <Ionicons name="calendar" size={20} color={theme.colors.primary} />
           </TouchableOpacity>
           {showDatePicker && (
             <DateTimePicker
@@ -141,28 +147,41 @@ export default function NovoFreteScreen({ navigation }: any) {
             />
           )}
           {showDatePicker && Platform.OS === 'ios' ? (
-            <TouchableOpacity style={styles.dateDone} onPress={() => setShowDatePicker(false)}>
-              <Text style={styles.dateDoneText}>OK</Text>
+            <TouchableOpacity style={[styles.dateDone, { backgroundColor: theme.colors.primary }]} onPress={() => setShowDatePicker(false)}>
+              <Text style={[styles.dateDoneText, { color: theme.colors.textOnPrimary }]}>OK</Text>
             </TouchableOpacity>
           ) : null}
         </View>
 
         <View style={styles.inline}>
           <View style={[styles.field, styles.inlineItem]}>
-            <Text style={styles.label}>Origem</Text>
-            <TextInput style={styles.input} placeholder="Cidade origem" value={origem} onChangeText={setOrigem} />
+            <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Origem</Text>
+            <TextInput 
+              style={[styles.input, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.inputBorder, color: theme.colors.text }]} 
+              placeholder="Cidade origem" 
+              placeholderTextColor={theme.colors.placeholder}
+              value={origem} 
+              onChangeText={setOrigem} 
+            />
           </View>
           <View style={[styles.field, styles.inlineItem]}>
-            <Text style={styles.label}>Destino</Text>
-            <TextInput style={styles.input} placeholder="Cidade destino" value={destino} onChangeText={setDestino} />
+            <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Destino</Text>
+            <TextInput 
+              style={[styles.input, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.inputBorder, color: theme.colors.text }]} 
+              placeholder="Cidade destino" 
+              placeholderTextColor={theme.colors.placeholder}
+              value={destino} 
+              onChangeText={setDestino} 
+            />
           </View>
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Valor Total</Text>
+          <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Valor Total</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.inputBorder, color: theme.colors.text }]}
             placeholder="1500,00"
+                        placeholderTextColor={theme.colors.placeholder}
             keyboardType="decimal-pad"
             value={valorTotal}
             onChangeText={setValorTotal}
@@ -171,20 +190,22 @@ export default function NovoFreteScreen({ navigation }: any) {
 
         <View style={styles.inline}>
           <View style={[styles.field, styles.inlineItem]}>
-            <Text style={styles.label}>Adiantamento (opcional)</Text>
+            <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Adiantamento (opcional)</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.inputBorder, color: theme.colors.text }]}
               placeholder="500,00"
+                            placeholderTextColor={theme.colors.placeholder}
               keyboardType="decimal-pad"
               value={adiantamento}
               onChangeText={setAdiantamento}
             />
           </View>
           <View style={[styles.field, styles.inlineItem]}>
-            <Text style={styles.label}>Saldo (opcional)</Text>
+            <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Saldo (opcional)</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.inputBorder, color: theme.colors.text }]}
               placeholder="1000,00"
+                            placeholderTextColor={theme.colors.placeholder}
               keyboardType="decimal-pad"
               value={saldo}
               onChangeText={setSaldo}
@@ -193,10 +214,11 @@ export default function NovoFreteScreen({ navigation }: any) {
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Observacoes</Text>
+          <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Observacoes</Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
+            style={[styles.input, styles.textArea, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.inputBorder, color: theme.colors.text }]}
             placeholder="Opcional"
+                        placeholderTextColor={theme.colors.placeholder}
             value={observacoes}
             onChangeText={setObservacoes}
             multiline
@@ -204,9 +226,9 @@ export default function NovoFreteScreen({ navigation }: any) {
           />
         </View>
 
-        <TouchableOpacity style={styles.button} onPress={salvar} disabled={saving}>
-          {saving ? <ActivityIndicator color="#FFF" /> : <Ionicons name="save" size={22} color="#FFF" />}
-          <Text style={styles.buttonText}>{saving ? 'Salvando...' : 'Salvar frete'}</Text>
+        <TouchableOpacity style={[styles.button, { backgroundColor: theme.colors.primary }]} onPress={salvar} disabled={saving}>
+          {saving ? <ActivityIndicator color={theme.colors.textOnPrimary} /> : <Ionicons name="save" size={22} color={theme.colors.textOnPrimary} />}
+          <Text style={[styles.buttonText, { color: theme.colors.textOnPrimary }]}>{saving ? 'Salvando...' : 'Salvar frete'}</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -214,36 +236,32 @@ export default function NovoFreteScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, backgroundColor: '#F5F5F5', flexGrow: 1 },
-  title: { fontSize: 22, fontWeight: '700', marginBottom: 16, color: '#333' },
+  container: { padding: 16, flexGrow: 1 },
+  title: { fontSize: 22, fontWeight: '700', marginBottom: 16 },
   field: { marginBottom: 12 },
-  label: { marginBottom: 6, color: '#555', fontWeight: '600' },
+  label: { marginBottom: 6, fontWeight: '600' },
   input: {
-    backgroundColor: '#FFF',
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
   dateInput: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  dateText: { color: '#333', fontSize: 16 },
-  datePlaceholder: { color: '#999', fontSize: 16 },
+  dateText: { fontSize: 16 },
+  datePlaceholder: { fontSize: 16 },
   dateDone: {
     marginTop: 8,
     alignSelf: 'flex-end',
-    backgroundColor: '#007AFF',
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 8,
   },
-  dateDoneText: { color: '#FFF', fontWeight: '700' },
+  dateDoneText: { fontWeight: '700' },
   inline: { flexDirection: 'row', gap: 10 },
   inlineItem: { flex: 1 },
   textArea: { height: 100, textAlignVertical: 'top' },
   button: {
     marginTop: 10,
-    backgroundColor: '#007AFF',
     borderRadius: 12,
     paddingVertical: 14,
     flexDirection: 'row',
@@ -251,5 +269,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
   },
-  buttonText: { color: '#FFF', fontWeight: '700', fontSize: 16 },
+  buttonText: { fontWeight: '700', fontSize: 16 },
 });

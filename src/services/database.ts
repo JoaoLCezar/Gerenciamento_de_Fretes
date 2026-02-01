@@ -57,6 +57,7 @@ export const initDatabase = async () => {
             valorTotal: data.valorTotal || data.valor || 0,
             adiantamento: data.adiantamento || undefined,
             saldo: data.saldo || undefined,
+            statusPagamento: data.statusPagamento || 'pendente',
             observacoes: data.observacoes || undefined,
             synced: true,
             createdAt: data.createdAt,
@@ -103,6 +104,7 @@ export const criarFrete = async (novo: NovoFrete): Promise<Frete> => {
     return {
       id: docRef.id,
       ...novo,
+      statusPagamento: novo.statusPagamento || 'pendente',
       synced: true,
       createdAt: ts,
       updatedAt: ts,
@@ -138,6 +140,7 @@ export const listarFretes = async (): Promise<Frete[]> => {
         valorTotal: data.valorTotal || data.valor || 0,
         adiantamento: data.adiantamento || undefined,
         saldo: data.saldo || undefined,
+        statusPagamento: data.statusPagamento || 'pendente',
         observacoes: data.observacoes || undefined,
         synced: true,
         createdAt: data.createdAt,
@@ -179,6 +182,7 @@ export const buscarFretePorId = async (id: string): Promise<Frete | null> => {
       valorTotal: data.valorTotal || data.valor || 0,
       adiantamento: data.adiantamento || undefined,
       saldo: data.saldo || undefined,
+      statusPagamento: data.statusPagamento || 'pendente',
       observacoes: data.observacoes || undefined,
       synced: true,
       createdAt: data.createdAt,
@@ -224,16 +228,20 @@ export const calcularEstatisticas = async (): Promise<EstatisticasFretes> => {
     let quantidadeFretes = 0;
     let freteMesAtual = 0;
     let quantidadeMesAtual = 0;
+    let totalSaldo = 0;
 
     const agora = new Date();
     const mesAtual = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
 
     fretes.forEach((frete) => {
       const valor = frete.valorTotal || 0;
+      const adiantamento = frete.adiantamento || 0;
+      const saldo = frete.saldo || 0;
       const dataStr = frete.data ? String(frete.data) : '';
 
       totalFaturado += valor;
       quantidadeFretes++;
+      totalSaldo += (valor - adiantamento - saldo);
 
       if (dataStr && dataStr.startsWith(mesAtual)) {
         freteMesAtual += valor;
@@ -246,6 +254,7 @@ export const calcularEstatisticas = async (): Promise<EstatisticasFretes> => {
       quantidadeFretes,
       freteMesAtual,
       quantidadeMesAtual,
+      totalSaldo,
     };
   } catch (error) {
     console.error('Erro ao calcular estatísticas:', error);
@@ -254,6 +263,7 @@ export const calcularEstatisticas = async (): Promise<EstatisticasFretes> => {
       quantidadeFretes: 0,
       freteMesAtual: 0,
       quantidadeMesAtual: 0,
+      totalSaldo: 0,
     };
   }
 };

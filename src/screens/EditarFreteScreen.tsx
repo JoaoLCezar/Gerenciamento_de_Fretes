@@ -16,8 +16,11 @@ import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { buscarFretePorId } from '../services/database';
 import { atualizarFreteComFila } from '../services/offlineQueue';
+import { calcularStatusPagamento } from '../utils/statusHelper';
+import { useTheme } from '../context/ThemeContext';
 
 export default function EditarFreteScreen({ route, navigation }: any) {
+  const { theme } = useTheme();
   const { freteId } = route.params;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -110,11 +113,6 @@ export default function EditarFreteScreen({ route, navigation }: any) {
       }
     }
 
-    // Calcular saldo automaticamente se não for informado
-    if (!saldo.trim() && adiantamento.trim()) {
-      saldoNumber = valorTotalNumber - adiantamentoNumber;
-    }
-
     setSaving(true);
     try {
       const dadosAtualizados: any = {
@@ -134,6 +132,13 @@ export default function EditarFreteScreen({ route, navigation }: any) {
         dadosAtualizados.observacoes = observacoes.trim();
       }
 
+      // Calcular status de pagamento
+      dadosAtualizados.statusPagamento = calcularStatusPagamento(
+        valorTotalNumber,
+        adiantamentoNumber > 0 ? adiantamentoNumber : undefined,
+        saldoNumber > 0 ? saldoNumber : undefined
+      );
+
       await atualizarFreteComFila(freteId, dadosAtualizados);
       navigation.goBack();
     } catch (err) {
@@ -146,29 +151,29 @@ export default function EditarFreteScreen({ route, navigation }: any) {
 
   if (loading) {
     return (
-      <View style={styles.loading}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Carregando frete...</Text>
+      <View style={[styles.loading, { backgroundColor: theme.colors.background }]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>Carregando frete...</Text>
       </View>
     );
   }
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Editar frete</Text>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: theme.colors.background }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <Text style={[styles.title, { color: theme.colors.text }]}>Editar frete</Text>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Data (DD/MM/AAAA)</Text>
+          <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Data (DD/MM/AAAA)</Text>
           <TouchableOpacity
-            style={[styles.input, styles.dateInput]}
+            style={[styles.input, styles.dateInput, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.inputBorder }]}
             onPress={() => setShowDatePicker(true)}
             activeOpacity={0.7}
           >
-            <Text style={data ? styles.dateText : styles.datePlaceholder}>
+            <Text style={data ? [styles.dateText, { color: theme.colors.text }] : [styles.datePlaceholder, { color: theme.colors.placeholder }]}>
               {data ? formatarData(data) : 'Selecionar data'}
             </Text>
-            <Ionicons name="calendar" size={20} color="#007AFF" />
+            <Ionicons name="calendar" size={20} color={theme.colors.primary} />
           </TouchableOpacity>
           {showDatePicker && (
             <DateTimePicker
@@ -182,28 +187,41 @@ export default function EditarFreteScreen({ route, navigation }: any) {
             />
           )}
           {showDatePicker && Platform.OS === 'ios' ? (
-            <TouchableOpacity style={styles.dateDone} onPress={() => setShowDatePicker(false)}>
-              <Text style={styles.dateDoneText}>OK</Text>
+            <TouchableOpacity style={[styles.dateDone, { backgroundColor: theme.colors.primary }]} onPress={() => setShowDatePicker(false)}>
+              <Text style={[styles.dateDoneText, { color: theme.colors.textOnPrimary }]}>OK</Text>
             </TouchableOpacity>
           ) : null}
         </View>
 
         <View style={styles.inline}>
           <View style={[styles.field, styles.inlineItem]}>
-            <Text style={styles.label}>Origem</Text>
-            <TextInput style={styles.input} placeholder="Cidade origem" value={origem} onChangeText={setOrigem} />
+            <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Origem</Text>
+            <TextInput 
+              style={[styles.input, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.inputBorder, color: theme.colors.text }]}
+              placeholder="Cidade origem"
+              placeholderTextColor={theme.colors.placeholder}
+              value={origem} 
+              onChangeText={setOrigem} 
+            />
           </View>
           <View style={[styles.field, styles.inlineItem]}>
-            <Text style={styles.label}>Destino</Text>
-            <TextInput style={styles.input} placeholder="Cidade destino" value={destino} onChangeText={setDestino} />
+            <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Destino</Text>
+            <TextInput 
+              style={[styles.input, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.inputBorder, color: theme.colors.text }]}
+              placeholder="Cidade destino"
+              placeholderTextColor={theme.colors.placeholder}
+              value={destino} 
+              onChangeText={setDestino} 
+            />
           </View>
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Valor Total</Text>
+          <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Valor Total</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.inputBorder, color: theme.colors.text }]}
             placeholder="1500,00"
+            placeholderTextColor={theme.colors.placeholder}
             keyboardType="decimal-pad"
             value={valorTotal}
             onChangeText={setValorTotal}
@@ -212,20 +230,22 @@ export default function EditarFreteScreen({ route, navigation }: any) {
 
         <View style={styles.inline}>
           <View style={[styles.field, styles.inlineItem]}>
-            <Text style={styles.label}>Adiantamento (opcional)</Text>
+            <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Adiantamento (opcional)</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.inputBorder, color: theme.colors.text }]}
               placeholder="500,00"
+              placeholderTextColor={theme.colors.placeholder}
               keyboardType="decimal-pad"
               value={adiantamento}
               onChangeText={setAdiantamento}
             />
           </View>
           <View style={[styles.field, styles.inlineItem]}>
-            <Text style={styles.label}>Saldo (opcional)</Text>
+            <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Saldo (opcional)</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.inputBorder, color: theme.colors.text }]}
               placeholder="1000,00"
+              placeholderTextColor={theme.colors.placeholder}
               keyboardType="decimal-pad"
               value={saldo}
               onChangeText={setSaldo}
@@ -234,10 +254,11 @@ export default function EditarFreteScreen({ route, navigation }: any) {
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Observações</Text>
+          <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Observações</Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
+            style={[styles.input, styles.textArea, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.inputBorder, color: theme.colors.text }]}
             placeholder="Opcional"
+            placeholderTextColor={theme.colors.placeholder}
             value={observacoes}
             onChangeText={setObservacoes}
             multiline
@@ -247,21 +268,21 @@ export default function EditarFreteScreen({ route, navigation }: any) {
 
         <View style={styles.buttonGroup}>
           <TouchableOpacity 
-            style={[styles.button, styles.btnCancel]} 
+            style={[styles.button, styles.btnCancel, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]} 
             onPress={() => navigation.goBack()}
             disabled={saving}
           >
-            <Ionicons name="close" size={22} color="#666" />
-            <Text style={styles.btnCancelText}>Cancelar</Text>
+            <Ionicons name="close" size={22} color={theme.colors.textSecondary} />
+            <Text style={[styles.btnCancelText, { color: theme.colors.textSecondary }]}>Cancelar</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={[styles.button, styles.btnSave]} 
+            style={[styles.button, styles.btnSave, { backgroundColor: theme.colors.primary }]} 
             onPress={salvar} 
             disabled={saving}
           >
-            {saving ? <ActivityIndicator color="#FFF" /> : <Ionicons name="checkmark" size={22} color="#FFF" />}
-            <Text style={styles.btnSaveText}>{saving ? 'Salvando...' : 'Salvar'}</Text>
+            {saving ? <ActivityIndicator color={theme.colors.textOnPrimary} /> : <Ionicons name="checkmark" size={22} color={theme.colors.textOnPrimary} />}
+            <Text style={[styles.btnSaveText, { color: theme.colors.textOnPrimary }]}>{saving ? 'Salvando...' : 'Salvar'}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -270,32 +291,29 @@ export default function EditarFreteScreen({ route, navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, backgroundColor: '#F5F5F5', flexGrow: 1 },
-  loading: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F5F5F5' },
-  loadingText: { marginTop: 8, color: '#666', fontSize: 16 },
-  title: { fontSize: 22, fontWeight: '700', marginBottom: 16, color: '#333' },
+  container: { padding: 16, flexGrow: 1 },
+  loading: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  loadingText: { marginTop: 8, fontSize: 16 },
+  title: { fontSize: 22, fontWeight: '700', marginBottom: 16 },
   field: { marginBottom: 12 },
-  label: { marginBottom: 6, color: '#555', fontWeight: '600' },
+  label: { marginBottom: 6, fontWeight: '600' },
   input: {
-    backgroundColor: '#FFF',
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
   dateInput: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  dateText: { color: '#333', fontSize: 16 },
-  datePlaceholder: { color: '#999', fontSize: 16 },
+  dateText: { fontSize: 16 },
+  datePlaceholder: { fontSize: 16 },
   dateDone: {
     marginTop: 8,
     alignSelf: 'flex-end',
-    backgroundColor: '#007AFF',
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 8,
   },
-  dateDoneText: { color: '#FFF', fontWeight: '700' },
+  dateDoneText: { fontWeight: '700' },
   inline: { flexDirection: 'row', gap: 10 },
   inlineItem: { flex: 1 },
   textArea: { height: 100, textAlignVertical: 'top' },
@@ -314,13 +332,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   btnCancel: {
-    backgroundColor: '#FFF',
     borderWidth: 2,
-    borderColor: '#DDD',
   },
-  btnCancelText: { color: '#666', fontWeight: '700', fontSize: 16 },
-  btnSave: {
-    backgroundColor: '#007AFF',
-  },
-  btnSaveText: { color: '#FFF', fontWeight: '700', fontSize: 16 },
+  btnCancelText: { fontWeight: '700', fontSize: 16 },
+  btnSave: {},
+  btnSaveText: { fontWeight: '700', fontSize: 16 },
 });

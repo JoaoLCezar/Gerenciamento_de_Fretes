@@ -13,8 +13,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { Frete } from '../models/Frete';
 import { buscarFretePorId } from '../services/database';
 import { deletarFreteComFila } from '../services/offlineQueue';
+import { obterTextoStatus, obterCorStatus } from '../utils/statusHelper';
+import { useTheme } from '../context/ThemeContext';
 
 export default function DetalheFreteScreen({ route, navigation }: any) {
+  const { theme } = useTheme();
   const { freteId } = route.params;
   const [frete, setFrete] = useState<Frete | null>(null);
   const [loading, setLoading] = useState(true);
@@ -78,106 +81,123 @@ export default function DetalheFreteScreen({ route, navigation }: any) {
 
   if (loading) {
     return (
-      <View style={styles.loading}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Carregando frete...</Text>
+      <View style={[styles.loading, { backgroundColor: theme.colors.background }]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>Carregando frete...</Text>
       </View>
     );
   }
 
   if (!frete) {
     return (
-      <View style={styles.loading}>
-        <Text style={styles.errorText}>Frete não encontrado</Text>
+      <View style={[styles.loading, { backgroundColor: theme.colors.background }]}>
+        <Text style={[styles.errorText, { color: theme.colors.error }]}>Frete não encontrado</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <View style={[styles.header, { backgroundColor: theme.colors.card }]}>
         <View style={styles.routeContainer}>
-          <Text style={styles.routeText}>{frete.origem}</Text>
-          <Ionicons name="arrow-forward" size={24} color="#007AFF" style={styles.arrow} />
-          <Text style={styles.routeText}>{frete.destino}</Text>
+          <Text style={[styles.routeText, { color: theme.colors.text }]}>{frete.origem}</Text>
+          <Ionicons name="arrow-forward" size={24} color={theme.colors.primary} style={styles.arrow} />
+          <Text style={[styles.routeText, { color: theme.colors.text }]}>{frete.destino}</Text>
         </View>
       </View>
 
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
         <View style={styles.cardSection}>
-          <Text style={styles.label}>Data do Frete</Text>
-          <Text style={styles.value}>{frete.data ? formatarData(frete.data) : 'Data indefinida'}</Text>
+          <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Status de Pagamento</Text>
+          <View style={[styles.statusBadge, { backgroundColor: obterCorStatus(frete.statusPagamento) }]}>
+            <Text style={styles.statusText}>{obterTextoStatus(frete.statusPagamento)}</Text>
+          </View>
         </View>
 
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: theme.colors.divider }]} />
 
         <View style={styles.cardSection}>
-          <Text style={styles.label}>Origem</Text>
-          <Text style={styles.value}>{frete.origem}</Text>
+          <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Data do Frete</Text>
+          <Text style={[styles.value, { color: theme.colors.text }]}>{frete.data ? formatarData(frete.data) : 'Data indefinida'}</Text>
         </View>
 
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: theme.colors.divider }]} />
 
         <View style={styles.cardSection}>
-          <Text style={styles.label}>Destino</Text>
-          <Text style={styles.value}>{frete.destino}</Text>
+          <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Origem</Text>
+          <Text style={[styles.value, { color: theme.colors.text }]}>{frete.origem}</Text>
         </View>
 
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: theme.colors.divider }]} />
 
         <View style={styles.cardSection}>
-          <Text style={styles.label}>Valor Total</Text>
-          <Text style={[styles.value, styles.valueMoney]}>{formatarMoeda(frete.valorTotal)}</Text>
+          <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Destino</Text>
+          <Text style={[styles.value, { color: theme.colors.text }]}>{frete.destino}</Text>
+        </View>
+
+        <View style={[styles.divider, { backgroundColor: theme.colors.divider }]} />
+
+        <View style={styles.cardSection}>
+          <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Valor Total</Text>
+          <Text style={[styles.value, styles.valueMoney, { color: theme.colors.primary }]}>{formatarMoeda(frete.valorTotal)}</Text>
         </View>
 
         {frete.adiantamento ? (
           <>
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: theme.colors.divider }]} />
             <View style={styles.cardSection}>
-              <Text style={styles.label}>Adiantamento</Text>
-              <Text style={[styles.value, styles.valueInfo]}>{formatarMoeda(frete.adiantamento)}</Text>
+              <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Adiantamento</Text>
+              <Text style={[styles.value, styles.valueInfo, { color: theme.colors.success }]}>{formatarMoeda(frete.adiantamento)}</Text>
             </View>
           </>
         ) : null}
 
         {frete.saldo ? (
           <>
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: theme.colors.divider }]} />
             <View style={styles.cardSection}>
-              <Text style={styles.label}>Saldo Restante</Text>
-              <Text style={[styles.value, styles.valueInfo]}>{formatarMoeda(frete.saldo)}</Text>
+              <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Saldo Restante</Text>
+              <Text style={[styles.value, styles.valueInfo, { color: theme.colors.success }]}>{formatarMoeda(frete.saldo)}</Text>
             </View>
           </>
         ) : null}
 
+        <View style={[styles.divider, { backgroundColor: theme.colors.divider }]} />
+        <View style={styles.cardSection}>
+          <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Falta Receber</Text>
+          <Text style={[styles.value, styles.valuePending, { color: theme.colors.error }]}>
+            {formatarMoeda(frete.valorTotal - (frete.adiantamento || 0) - (frete.saldo || 0))}
+          </Text>
+        </View>
+
         {frete.observacoes && (
           <>
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: theme.colors.divider }]} />
             <View style={styles.cardSection}>
-              <Text style={styles.label}>Observações</Text>
-              <Text style={styles.value}>{frete.observacoes}</Text>
+              <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Observações</Text>
+              <Text style={[styles.value, { color: theme.colors.text }]}>{frete.observacoes}</Text>
             </View>
           </>
         )}
 
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: theme.colors.divider }]} />
 
         <View style={styles.cardSection}>
-          <Text style={styles.label}>ID do Frete</Text>
-          <Text style={[styles.value, styles.valueSmall]}>{frete.id}</Text>
+          <Text style={[styles.label, { color: theme.colors.textSecondary }]}>ID do Frete</Text>
+          <Text style={[styles.value, styles.valueSmall, { color: theme.colors.textSecondary }]}>{frete.id}</Text>
         </View>
       </View>
 
-      <View style={styles.timestamps}>
+      <View style={[styles.timestamps, { backgroundColor: theme.colors.card }]}>
         <View style={styles.timestampItem}>
-          <Text style={styles.timestampLabel}>Criado em:</Text>
-          <Text style={styles.timestampValue}>
+          <Text style={[styles.timestampLabel, { color: theme.colors.textSecondary }]}>Criado em:</Text>
+          <Text style={[styles.timestampValue, { color: theme.colors.textSecondary }]}>
             {frete.createdAt ? new Date(frete.createdAt).toLocaleString('pt-BR') : 'N/A'}
           </Text>
         </View>
         <View style={styles.timestampItem}>
-          <Text style={styles.timestampLabel}>Atualizado em:</Text>
-          <Text style={styles.timestampValue}>
+          <Text style={[styles.timestampLabel, { color: theme.colors.textSecondary }]}>Atualizado em:</Text>
+          <Text style={[styles.timestampValue, { color: theme.colors.textSecondary }]}>
             {frete.updatedAt ? new Date(frete.updatedAt).toLocaleString('pt-BR') : 'N/A'}
           </Text>
         </View>
@@ -185,20 +205,20 @@ export default function DetalheFreteScreen({ route, navigation }: any) {
 
       <View style={styles.actions}>
         <TouchableOpacity
-          style={styles.btnEdit}
+          style={[styles.btnEdit, { backgroundColor: theme.colors.card, borderColor: theme.colors.primary }]}
           onPress={() => navigation.navigate('EditarFrete', { freteId })}
         >
-          <Ionicons name="pencil" size={20} color="#007AFF" />
-          <Text style={styles.btnEditText}>Editar</Text>
+          <Ionicons name="pencil" size={20} color={theme.colors.primary} />
+          <Text style={[styles.btnEditText, { color: theme.colors.primary }]}>Editar</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.btnDelete} onPress={excluir} disabled={deleting}>
+        <TouchableOpacity style={[styles.btnDelete, { backgroundColor: theme.colors.error }]} onPress={excluir} disabled={deleting}>
           {deleting ? (
-            <ActivityIndicator size="small" color="#FFF" />
+            <ActivityIndicator size="small" color={theme.colors.textOnPrimary} />
           ) : (
             <>
-              <Ionicons name="trash" size={20} color="#FFF" />
-              <Text style={styles.btnDeleteText}>Deletar</Text>
+              <Ionicons name="trash" size={20} color={theme.colors.textOnPrimary} />
+              <Text style={[styles.btnDeleteText, { color: theme.colors.textOnPrimary }]}>Deletar</Text>
             </>
           )}
         </TouchableOpacity>
@@ -210,26 +230,21 @@ export default function DetalheFreteScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
     padding: 12,
   },
   loading: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5F5F5',
   },
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#666',
   },
   errorText: {
     fontSize: 16,
-    color: '#E53935',
   },
   header: {
-    backgroundColor: '#FFF',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -244,24 +259,13 @@ const styles = StyleSheet.create({
   routeText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#333',
     flex: 1,
     textAlign: 'center',
   },
   arrow: {
     marginHorizontal: 12,
   },
-  statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    gap: 6,
-  },
   card: {
-    backgroundColor: '#FFF',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -273,37 +277,45 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#999',
     textTransform: 'uppercase',
     marginBottom: 4,
   },
   value: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#333',
+  },
+  statusBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  statusText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '700',
   },
   valueMoney: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#007AFF',
   },
   valueInfo: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#28A745',
+  },
+  valuePending: {
+    fontSize: 18,
+    fontWeight: '700',
   },
   valueSmall: {
     fontSize: 12,
     fontFamily: 'monospace',
-    color: '#666',
   },
   divider: {
     height: 1,
-    backgroundColor: '#E0E0E0',
     marginVertical: 8,
   },
   timestamps: {
-    backgroundColor: '#FFF',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -315,13 +327,11 @@ const styles = StyleSheet.create({
   timestampLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#999',
     textTransform: 'uppercase',
     marginBottom: 4,
   },
   timestampValue: {
     fontSize: 14,
-    color: '#666',
   },
   actions: {
     flexDirection: 'row',
@@ -330,7 +340,6 @@ const styles = StyleSheet.create({
   },
   btnEdit: {
     flex: 1,
-    backgroundColor: '#FFF',
     borderRadius: 12,
     paddingVertical: 14,
     flexDirection: 'row',
@@ -338,17 +347,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     borderWidth: 2,
-    borderColor: '#007AFF',
     elevation: 2,
   },
   btnEditText: {
-    color: '#007AFF',
     fontWeight: '700',
     fontSize: 16,
   },
   btnDelete: {
     flex: 1,
-    backgroundColor: '#E53935',
     borderRadius: 12,
     paddingVertical: 14,
     flexDirection: 'row',
@@ -358,7 +364,6 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   btnDeleteText: {
-    color: '#FFF',
     fontWeight: '700',
     fontSize: 16,
   },
