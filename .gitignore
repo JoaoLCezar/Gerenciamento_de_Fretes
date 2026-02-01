@@ -11,7 +11,5 @@ npm-debug.*
 web-build/
 .DS_Store
 .metro-health-check*
-src/services/firebaseConfig.ts
 package-lock.json
-android/
 ios/
