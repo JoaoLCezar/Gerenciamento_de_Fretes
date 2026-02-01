@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -11,11 +11,17 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { criarFreteComFila } from '../services/offlineQueue';
+import { buscarFretePorId } from '../services/database';
+import { atualizarFreteComFila } from '../services/offlineQueue';
 
-export default function NovoFreteScreen({ navigation }: any) {
+export default function EditarFreteScreen({ route, navigation }: any) {
+  const { freteId } = route.params;
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  
   const [data, setData] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [origem, setOrigem] = useState('');
@@ -24,7 +30,6 @@ export default function NovoFreteScreen({ navigation }: any) {
   const [adiantamento, setAdiantamento] = useState('');
   const [saldo, setSaldo] = useState('');
   const [observacoes, setObservacoes] = useState('');
-  const [saving, setSaving] = useState(false);
 
   const formatarData = (d: Date) => {
     const dia = String(d.getDate()).padStart(2, '0');
@@ -40,15 +45,50 @@ export default function NovoFreteScreen({ navigation }: any) {
     return `${ano}-${mes}-${dia}`;
   };
 
+  const parseDataISO = (dataISO: string): Date => {
+    const [ano, mes, dia] = dataISO.split('-');
+    return new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+  };
+
+  const carregar = async () => {
+    try {
+      const frete = await buscarFretePorId(freteId);
+      if (!frete) {
+        Alert.alert('Erro', 'Frete não encontrado');
+        navigation.goBack();
+        return;
+      }
+
+      setData(parseDataISO(frete.data));
+      setOrigem(frete.origem);
+      setDestino(frete.destino);
+      setValorTotal(frete.valorTotal.toString().replace('.', ','));
+      setAdiantamento(frete.adiantamento ? frete.adiantamento.toString().replace('.', ',') : '');
+      setSaldo(frete.saldo ? frete.saldo.toString().replace('.', ',') : '');
+      setObservacoes(frete.observacoes || '');
+    } catch (err) {
+      Alert.alert('Erro', 'Não foi possível carregar o frete');
+      navigation.goBack();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      carregar();
+    }, [freteId])
+  );
+
   const salvar = async () => {
     if (!data || !origem || !destino || !valorTotal) {
-      Alert.alert('Campos obrigatorios', 'Preencha data, origem, destino e valor total.');
+      Alert.alert('Campos obrigatórios', 'Preencha data, origem, destino e valor total.');
       return;
     }
 
     const valorTotalNumber = parseFloat(valorTotal.replace(',', '.'));
     if (Number.isNaN(valorTotalNumber)) {
-      Alert.alert('Valor invalido', 'Informe o valor total usando numeros.');
+      Alert.alert('Valor inválido', 'Informe o valor total usando números.');
       return;
     }
 
@@ -56,7 +96,7 @@ export default function NovoFreteScreen({ navigation }: any) {
     if (adiantamento.trim()) {
       adiantamentoNumber = parseFloat(adiantamento.replace(',', '.'));
       if (Number.isNaN(adiantamentoNumber)) {
-        Alert.alert('Valor invalido', 'Informe o adiantamento usando numeros.');
+        Alert.alert('Valor inválido', 'Informe o adiantamento usando números.');
         return;
       }
     }
@@ -65,7 +105,7 @@ export default function NovoFreteScreen({ navigation }: any) {
     if (saldo.trim()) {
       saldoNumber = parseFloat(saldo.replace(',', '.'));
       if (Number.isNaN(saldoNumber)) {
-        Alert.alert('Valor invalido', 'Informe o saldo usando numeros.');
+        Alert.alert('Valor inválido', 'Informe o saldo usando números.');
         return;
       }
     }
@@ -77,45 +117,46 @@ export default function NovoFreteScreen({ navigation }: any) {
 
     setSaving(true);
     try {
-      const freteData: any = {
+      const dadosAtualizados: any = {
         data: formatarDataISO(data),
         origem,
         destino,
         valorTotal: valorTotalNumber,
-        createdAt: Date.now(),
       };
+
       if (adiantamentoNumber > 0) {
-        freteData.adiantamento = adiantamentoNumber;
+        dadosAtualizados.adiantamento = adiantamentoNumber;
       }
       if (saldoNumber > 0) {
-        freteData.saldo = saldoNumber;
+        dadosAtualizados.saldo = saldoNumber;
       }
       if (observacoes.trim()) {
-        freteData.observacoes = observacoes.trim();
+        dadosAtualizados.observacoes = observacoes.trim();
       }
-      await criarFreteComFila(freteData);
-      // Sucesso silencioso - sem Alert
-      setOrigem('');
-      setDestino('');
-      setValorTotal('');
-      setAdiantamento('');
-      setSaldo('');
-      setObservacoes('');
-      setData(null);
-      navigation.navigate('ListaFretes');
+
+      await atualizarFreteComFila(freteId, dadosAtualizados);
+      navigation.goBack();
     } catch (err) {
-      // Erro silencioso - salvo na fila mesmo assim
-      console.warn('Erro ao salvar frete (será sincronizado depois):', err);
-      navigation.navigate('ListaFretes');
+      console.warn('Erro ao atualizar frete (será sincronizado depois):', err);
+      navigation.goBack();
     } finally {
       setSaving(false);
     }
   };
 
+  if (loading) {
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" color="#007AFF" />
+        <Text style={styles.loadingText}>Carregando frete...</Text>
+      </View>
+    );
+  }
+
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Cadastrar frete</Text>
+        <Text style={styles.title}>Editar frete</Text>
 
         <View style={styles.field}>
           <Text style={styles.label}>Data (DD/MM/AAAA)</Text>
@@ -193,7 +234,7 @@ export default function NovoFreteScreen({ navigation }: any) {
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Observacoes</Text>
+          <Text style={styles.label}>Observações</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
             placeholder="Opcional"
@@ -204,10 +245,25 @@ export default function NovoFreteScreen({ navigation }: any) {
           />
         </View>
 
-        <TouchableOpacity style={styles.button} onPress={salvar} disabled={saving}>
-          {saving ? <ActivityIndicator color="#FFF" /> : <Ionicons name="save" size={22} color="#FFF" />}
-          <Text style={styles.buttonText}>{saving ? 'Salvando...' : 'Salvar frete'}</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonGroup}>
+          <TouchableOpacity 
+            style={[styles.button, styles.btnCancel]} 
+            onPress={() => navigation.goBack()}
+            disabled={saving}
+          >
+            <Ionicons name="close" size={22} color="#666" />
+            <Text style={styles.btnCancelText}>Cancelar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.button, styles.btnSave]} 
+            onPress={salvar} 
+            disabled={saving}
+          >
+            {saving ? <ActivityIndicator color="#FFF" /> : <Ionicons name="checkmark" size={22} color="#FFF" />}
+            <Text style={styles.btnSaveText}>{saving ? 'Salvando...' : 'Salvar'}</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -215,6 +271,8 @@ export default function NovoFreteScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   container: { padding: 16, backgroundColor: '#F5F5F5', flexGrow: 1 },
+  loading: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F5F5F5' },
+  loadingText: { marginTop: 8, color: '#666', fontSize: 16 },
   title: { fontSize: 22, fontWeight: '700', marginBottom: 16, color: '#333' },
   field: { marginBottom: 12 },
   label: { marginBottom: 6, color: '#555', fontWeight: '600' },
@@ -241,9 +299,13 @@ const styles = StyleSheet.create({
   inline: { flexDirection: 'row', gap: 10 },
   inlineItem: { flex: 1 },
   textArea: { height: 100, textAlignVertical: 'top' },
-  button: {
+  buttonGroup: {
+    flexDirection: 'row',
+    gap: 12,
     marginTop: 10,
-    backgroundColor: '#007AFF',
+  },
+  button: {
+    flex: 1,
     borderRadius: 12,
     paddingVertical: 14,
     flexDirection: 'row',
@@ -251,5 +313,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
   },
-  buttonText: { color: '#FFF', fontWeight: '700', fontSize: 16 },
+  btnCancel: {
+    backgroundColor: '#FFF',
+    borderWidth: 2,
+    borderColor: '#DDD',
+  },
+  btnCancelText: { color: '#666', fontWeight: '700', fontSize: 16 },
+  btnSave: {
+    backgroundColor: '#007AFF',
+  },
+  btnSaveText: { color: '#FFF', fontWeight: '700', fontSize: 16 },
 });

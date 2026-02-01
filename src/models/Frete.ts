@@ -6,7 +6,9 @@ export interface Frete {
   data: string; // ISO string
   origem: string;
   destino: string;
-  valor: number;
+  valorTotal: number;
+  adiantamento?: number;
+  saldo?: number;
   observacoes?: string;
   synced: boolean;
   createdAt: number;
@@ -17,7 +19,9 @@ export interface NovoFrete {
   data: string;
   origem: string;
   destino: string;
-  valor: number;
+  valorTotal: number;
+  adiantamento?: number;
+  saldo?: number;
   observacoes?: string;
 }
 

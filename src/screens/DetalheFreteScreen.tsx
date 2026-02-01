@@ -126,9 +126,29 @@ export default function DetalheFreteScreen({ route, navigation }: any) {
         <View style={styles.divider} />
 
         <View style={styles.cardSection}>
-          <Text style={styles.label}>Valor</Text>
-          <Text style={[styles.value, styles.valueMoney]}>{formatarMoeda(frete.valor)}</Text>
+          <Text style={styles.label}>Valor Total</Text>
+          <Text style={[styles.value, styles.valueMoney]}>{formatarMoeda(frete.valorTotal)}</Text>
         </View>
+
+        {frete.adiantamento ? (
+          <>
+            <View style={styles.divider} />
+            <View style={styles.cardSection}>
+              <Text style={styles.label}>Adiantamento</Text>
+              <Text style={[styles.value, styles.valueInfo]}>{formatarMoeda(frete.adiantamento)}</Text>
+            </View>
+          </>
+        ) : null}
+
+        {frete.saldo ? (
+          <>
+            <View style={styles.divider} />
+            <View style={styles.cardSection}>
+              <Text style={styles.label}>Saldo Restante</Text>
+              <Text style={[styles.value, styles.valueInfo]}>{formatarMoeda(frete.saldo)}</Text>
+            </View>
+          </>
+        ) : null}
 
         {frete.observacoes && (
           <>
@@ -266,6 +286,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     color: '#007AFF',
+  },
+  valueInfo: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#28A745',
   },
   valueSmall: {
     fontSize: 12,

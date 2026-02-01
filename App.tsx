@@ -8,6 +8,7 @@ import HomeScreen from './src/screens/HomeScreen';
 import ListaFretesScreen from './src/screens/ListaFretesScreen';
 import NovoFreteScreen from './src/screens/NovoFreteScreen';
 import DetalheFreteScreen from './src/screens/DetalheFreteScreen';
+import EditarFreteScreen from './src/screens/EditarFreteScreen';
 import { initDatabase } from './src/services/database';
 import { initOfflineQueue } from './src/services/offlineQueue';
 
@@ -68,6 +69,7 @@ export default function App() {
         <Stack.Screen name="ListaFretes" component={ListaFretesScreen} options={{ title: 'Fretes' }} />
         <Stack.Screen name="NovoFrete" component={NovoFreteScreen} options={{ title: 'Novo Frete' }} />
         <Stack.Screen name="DetalheFrete" component={DetalheFreteScreen} options={{ title: 'Detalhes do Frete' }} />
+        <Stack.Screen name="EditarFrete" component={EditarFreteScreen} options={{ title: 'Editar Frete' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

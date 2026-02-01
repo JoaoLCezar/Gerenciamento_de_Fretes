@@ -54,7 +54,9 @@ export const initDatabase = async () => {
             data: data.data,
             origem: data.origem,
             destino: data.destino,
-            valor: data.valor,
+            valorTotal: data.valorTotal || data.valor || 0,
+            adiantamento: data.adiantamento || undefined,
+            saldo: data.saldo || undefined,
             observacoes: data.observacoes || undefined,
             synced: true,
             createdAt: data.createdAt,
@@ -77,22 +79,30 @@ export const initDatabase = async () => {
 export const criarFrete = async (novo: NovoFrete): Promise<Frete> => {
   try {
     const ts = Date.now();
-    const freteData = {
+    const freteData: any = {
       data: novo.data,
       origem: novo.origem,
       destino: novo.destino,
-      valor: novo.valor,
-      observacoes: novo.observacoes || null,
+      valorTotal: novo.valorTotal,
       createdAt: ts,
       updatedAt: ts,
     };
+    
+    if (novo.adiantamento) {
+      freteData.adiantamento = novo.adiantamento;
+    }
+    if (novo.saldo) {
+      freteData.saldo = novo.saldo;
+    }
+    if (novo.observacoes) {
+      freteData.observacoes = novo.observacoes;
+    }
 
     const docRef = await addDoc(collection(db, COLECAO), freteData);
 
     return {
       id: docRef.id,
       ...novo,
-      observacoes: novo.observacoes,
       synced: true,
       createdAt: ts,
       updatedAt: ts,
@@ -125,7 +135,9 @@ export const listarFretes = async (): Promise<Frete[]> => {
         data: data.data,
         origem: data.origem,
         destino: data.destino,
-        valor: data.valor,
+        valorTotal: data.valorTotal || data.valor || 0,
+        adiantamento: data.adiantamento || undefined,
+        saldo: data.saldo || undefined,
         observacoes: data.observacoes || undefined,
         synced: true,
         createdAt: data.createdAt,
@@ -164,7 +176,9 @@ export const buscarFretePorId = async (id: string): Promise<Frete | null> => {
       data: data.data,
       origem: data.origem,
       destino: data.destino,
-      valor: data.valor,
+      valorTotal: data.valorTotal || data.valor || 0,
+      adiantamento: data.adiantamento || undefined,
+      saldo: data.saldo || undefined,
       observacoes: data.observacoes || undefined,
       synced: true,
       createdAt: data.createdAt,
@@ -215,7 +229,7 @@ export const calcularEstatisticas = async (): Promise<EstatisticasFretes> => {
     const mesAtual = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
 
     fretes.forEach((frete) => {
-      const valor = frete.valor || 0;
+      const valor = frete.valorTotal || 0;
       const dataStr = frete.data ? String(frete.data) : '';
 
       totalFaturado += valor;

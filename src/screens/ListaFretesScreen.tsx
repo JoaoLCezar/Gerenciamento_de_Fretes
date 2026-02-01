@@ -55,7 +55,13 @@ export default function ListaFretesScreen({ navigation }: any) {
         <Text style={styles.cardTitle}>{`${item.origem} -> ${item.destino}`}</Text>
       </View>
       <Text style={styles.cardDate}>{item.data ? formatarData(item.data) : 'Data indefinida'}</Text>
-      <Text style={styles.cardValue}>{formatarMoeda(item.valor)}</Text>
+      <Text style={styles.cardValue}>{formatarMoeda(item.valorTotal)}</Text>
+      {item.adiantamento ? (
+        <Text style={styles.cardInfo}>Adiantamento: {formatarMoeda(item.adiantamento)}</Text>
+      ) : null}
+      {item.saldo ? (
+        <Text style={styles.cardInfo}>Saldo: {formatarMoeda(item.saldo)}</Text>
+      ) : null}
       {item.observacoes ? <Text style={styles.cardObs}>{item.observacoes}</Text> : null}
     </TouchableOpacity>
   );
@@ -129,5 +135,6 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 16, fontWeight: '700', color: '#333' },
   cardDate: { marginTop: 6, color: '#666', fontSize: 13 },
   cardValue: { marginTop: 8, fontSize: 18, fontWeight: 'bold', color: '#007AFF' },
+  cardInfo: { marginTop: 4, color: '#666', fontSize: 13 },
   cardObs: { marginTop: 6, color: '#555', fontSize: 14 },
 });
