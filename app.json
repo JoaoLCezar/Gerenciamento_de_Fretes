@@ -5,6 +5,9 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#007AFF"
+    },
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -17,6 +20,9 @@
     },
     "android": {
       "package": "com.seudominio.fretes",
+      "splash": {
+        "backgroundColor": "#007AFF"
+      },
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
       }
