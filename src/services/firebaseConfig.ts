@@ -11,6 +11,8 @@ import {
   memoryLocalCache,
   Firestore,
 } from 'firebase/firestore';
+import { getAuth, initializeAuth, getReactNativePersistence } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
 // Suprimir logs verbosos do Firebase
@@ -61,5 +63,15 @@ if (Platform.OS === 'web') {
   });
 }
 
-export { db };
+// Inicializa Firebase Auth com persistência AsyncStorage para React Native
+let auth;
+if (Platform.OS === 'web') {
+  auth = getAuth(app);
+} else {
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage)
+  });
+}
+
+export { db, auth };
 export default app;

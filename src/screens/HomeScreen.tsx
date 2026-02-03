@@ -18,6 +18,7 @@ export default function HomeScreen({ navigation }: any) {
   });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [valoresVisiveis, setValoresVisiveis] = useState(true);
 
   const carregar = async () => {
     try {
@@ -40,6 +41,13 @@ export default function HomeScreen({ navigation }: any) {
     return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   };
 
+  const renderValor = (valor: string) => {
+    if (valoresVisiveis) {
+      return valor;
+    }
+    return '••••••';
+  };
+
   if (loading) {
     return (
       <View style={[styles.loading, { backgroundColor: theme.colors.background }]}>
@@ -60,9 +68,14 @@ export default function HomeScreen({ navigation }: any) {
             <Text style={styles.title}>Dashboard</Text>
             <Text style={styles.subtitle}>Gestão de Fretes</Text>
           </View>
-          <TouchableOpacity onPress={toggleTheme} style={styles.themeButton}>
-            <Ionicons name={isDark ? 'sunny' : 'moon'} size={24} color={theme.colors.textOnPrimary} />
-          </TouchableOpacity>
+          <View style={styles.headerButtons}>
+            <TouchableOpacity onPress={() => setValoresVisiveis(!valoresVisiveis)} style={styles.eyeButton}>
+              <Ionicons name={valoresVisiveis ? 'eye' : 'eye-off'} size={24} color={theme.colors.textOnPrimary} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={toggleTheme} style={styles.themeButton}>
+              <Ionicons name={isDark ? 'sunny' : 'moon'} size={24} color={theme.colors.textOnPrimary} />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
@@ -72,7 +85,9 @@ export default function HomeScreen({ navigation }: any) {
           <Ionicons name="cash-outline" size={40} color={theme.colors.success} />
           <View style={styles.cardContent}>
             <Text style={[styles.cardLabel, { color: theme.colors.textSecondary }]}>Total Faturado</Text>
-            <Text style={[styles.cardValueBig, { color: theme.colors.success }]}>{formatarMoeda(stats.totalFaturado)}</Text>
+            <Text style={[styles.cardValueBig, { color: theme.colors.success, opacity: valoresVisiveis ? 1 : 0.3 }]}>
+              {renderValor(formatarMoeda(stats.totalFaturado))}
+            </Text>
           </View>
         </View>
 
@@ -88,7 +103,9 @@ export default function HomeScreen({ navigation }: any) {
           <Ionicons name="wallet-outline" size={35} color={theme.colors.error} />
           <View style={styles.cardContent}>
             <Text style={[styles.cardLabel, { color: theme.colors.textSecondary }]}>Saldo Total a Receber</Text>
-            <Text style={[styles.cardValueSaldo, { color: theme.colors.error }]}>{formatarMoeda(stats.totalSaldo)}</Text>
+            <Text style={[styles.cardValueSaldo, { color: theme.colors.error, opacity: valoresVisiveis ? 1 : 0.3 }]}>
+              {renderValor(formatarMoeda(stats.totalSaldo))}
+            </Text>
           </View>
         </View>
       </View>
@@ -99,7 +116,9 @@ export default function HomeScreen({ navigation }: any) {
           <Ionicons name="trending-up-outline" size={35} color={theme.colors.warning} />
           <View style={styles.cardContent}>
             <Text style={[styles.cardLabel, { color: theme.colors.textSecondary }]}>Faturado no Mês</Text>
-            <Text style={[styles.cardValueMed, { color: theme.colors.warning }]}>{formatarMoeda(stats.freteMesAtual)}</Text>
+            <Text style={[styles.cardValueMed, { color: theme.colors.warning, opacity: valoresVisiveis ? 1 : 0.3 }]}>
+              {renderValor(formatarMoeda(stats.freteMesAtual))}
+            </Text>
           </View>
         </View>
 
@@ -122,6 +141,8 @@ const styles = StyleSheet.create({
   loadingText: { marginTop: 10, fontSize: 16 },
   header: { padding: 20, paddingTop: 60, paddingBottom: 30 },
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  headerButtons: { flexDirection: 'row', gap: 8 },
+  eyeButton: { padding: 8 },
   themeButton: { padding: 8 },
   title: { fontSize: 32, fontWeight: 'bold', color: '#FFF' },
   subtitle: { fontSize: 16, color: '#E3F2FD', marginTop: 5 },

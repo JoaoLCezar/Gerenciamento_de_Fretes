@@ -1,6 +1,7 @@
 /**
  * Banco de dados Firebase Firestore
  * Persistência offline com snapshot listener que preenche cache
+ * Filtrado por usuário autenticado
  */
 import {
   collection,
@@ -11,6 +12,8 @@ import {
   updateDoc,
   deleteDoc,
   onSnapshot,
+  query,
+  where,
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
 import { Frete, NovoFrete, EstatisticasFretes } from '../models/Frete';
@@ -26,6 +29,7 @@ const obterTitulo = (data: any) => {
 // Cache local em memória para persistência offline
 let fretesCached: Frete[] = [];
 let cacheAtualizado = false;
+let currentUserId: string | null = null;
 
 // Adicionar frete ao cache manualmente (para filas offline)
 export const addToCache = (frete: Frete) => {
@@ -46,18 +50,31 @@ export const removeFromCache = (freteId: string) => {
   }
 };
 
-// Inicializar listener para manter cache sempre atualizado
-export const initDatabase = async () => {
+// Inicializar listener para manter cache sempre atualizado (filtrado por usuário)
+export const initDatabase = async (userId?: string) => {
+  if (userId) {
+    currentUserId = userId;
+  }
+  
   try {
-    // Ativar listener que mantém cache sincronizado
+    // Se não tiver userId, não carrega nada (usuário não autenticado)
+    if (!currentUserId) {
+      console.log('⚠️ Database não inicializado - usuário não autenticado');
+      return;
+    }
+
+    // Ativar listener que mantém cache sincronizado APENAS para o usuário atual
+    const q = query(collection(db, COLECAO), where('userId', '==', currentUserId));
+    
     onSnapshot(
-      collection(db, COLECAO),
+      q,
       (snapshot) => {
         fretesCached = snapshot.docs.map((doc) => {
           const data = doc.data();
           return {
             id: doc.id,
             titulo: obterTitulo(data),
+            userId: data.userId || currentUserId,
             data: data.data,
             origem: data.origem,
             destino: data.destino,
@@ -72,7 +89,7 @@ export const initDatabase = async () => {
           };
         });
         cacheAtualizado = true;
-        console.log(`Firebase Firestore pronto - ${fretesCached.length} fretes em cache offline`);
+        console.log(`Firebase Firestore pronto - ${fretesCached.length} fretes do usuário ${currentUserId}`);
       },
       (error: any) => {
         console.error('Erro no listener de fretes:', error);
@@ -89,6 +106,7 @@ export const criarFrete = async (novo: NovoFrete): Promise<Frete> => {
     const ts = Date.now();
     const freteData: any = {
       titulo: novo.titulo,
+      userId: novo.userId, // Vincula ao usuário
       data: novo.data,
       origem: novo.origem,
       destino: novo.destino,
@@ -144,6 +162,7 @@ export const listarFretes = async (): Promise<Frete[]> => {
       return {
         id: doc.id,
         titulo: obterTitulo(data),
+        userId: data.userId || currentUserId || '',
         data: data.data,
         origem: data.origem,
         destino: data.destino,
@@ -187,6 +206,7 @@ export const buscarFretePorId = async (id: string): Promise<Frete | null> => {
     return {
       id: docSnap.id,
       titulo: obterTitulo(data),
+      userId: data.userId || currentUserId || '',
       data: data.data,
       origem: data.origem,
       destino: data.destino,

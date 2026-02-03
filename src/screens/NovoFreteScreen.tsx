@@ -16,9 +16,11 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { criarFreteComFila } from '../services/offlineQueue';
 import { calcularStatusPagamento } from '../utils/statusHelper';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function NovoFreteScreen({ navigation }: any) {
   const { theme } = useTheme();
+  const { user } = useAuth();
   const [data, setData] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [titulo, setTitulo] = useState('');
@@ -50,6 +52,11 @@ export default function NovoFreteScreen({ navigation }: any) {
       return;
     }
 
+    if (!user?.uid) {
+      Alert.alert('Erro', 'Usuário não autenticado');
+      return;
+    }
+
     const valorTotalNumber = parseFloat(valorTotal.replace(',', '.'));
     if (Number.isNaN(valorTotalNumber)) {
       Alert.alert('Valor invalido', 'Informe o valor total usando numeros.');
@@ -78,6 +85,7 @@ export default function NovoFreteScreen({ navigation }: any) {
     try {
       const freteData: any = {
         titulo: titulo.trim(),
+        userId: user.uid, // Vincula ao usuário logado
         data: formatarDataISO(data),
         origem,
         destino,

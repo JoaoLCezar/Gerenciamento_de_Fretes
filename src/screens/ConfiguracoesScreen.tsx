@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 import { getQueueStatus } from '../services/offlineQueue';
 import { sincronizarCompleto } from '../services/syncService';
 
-export default function ConfiguracoesScreen() {
+export default function ConfiguracoesScreen({ navigation }: any) {
   const { theme, toggleTheme, isDark } = useTheme();
+  const { user, logout, isOfflineMode } = useAuth();
   const [status, setStatus] = useState(getQueueStatus());
   const [syncing, setSyncing] = useState(false);
 
@@ -28,9 +30,44 @@ export default function ConfiguracoesScreen() {
     }
   };
 
+  const handleLogout = () => {
+    Alert.alert('Sair', 'Tem certeza que deseja sair?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Sair',
+        style: 'destructive',
+        onPress: logout,
+      },
+    ]);
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Text style={[styles.title, { color: theme.colors.text }]}>Configurações</Text>
+
+      {/* Usuário */}
+      <TouchableOpacity 
+        style={[styles.card, { backgroundColor: theme.colors.card }]}
+        onPress={() => navigation.navigate('Perfil' as never)}
+      >
+        <View style={styles.row}>
+          <Ionicons name="person-circle" size={20} color={theme.colors.primary} />
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.cardTitle, { color: theme.colors.text }]}>
+              {user?.displayName || user?.email?.split('@')[0] || 'Usuário'}
+            </Text>
+            <Text style={[styles.helperText, { color: theme.colors.textSecondary }]}>
+              {user?.email}
+            </Text>
+            {isOfflineMode && (
+              <Text style={[styles.helperText, { color: theme.colors.warning }]}>
+                🔴 Modo Offline
+              </Text>
+            )}
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
+        </View>
+      </TouchableOpacity>
 
       <View style={[styles.card, { backgroundColor: theme.colors.card }]}> 
         <View style={styles.rowBetween}>
@@ -80,6 +117,15 @@ export default function ConfiguracoesScreen() {
         <Text style={[styles.helperText, { color: theme.colors.textSecondary }]}>Gerenciamento de Fretes</Text>
         <Text style={[styles.helperText, { color: theme.colors.textSecondary }]}>Versão 1.0.0</Text>
       </View>
+
+      {/* Logout */}
+      <TouchableOpacity
+        style={[styles.logoutCard, { borderColor: theme.colors.error, backgroundColor: theme.colors.card }]}
+        onPress={handleLogout}
+      >
+        <Ionicons name="log-out" size={20} color={theme.colors.error} />
+        <Text style={[styles.logoutText, { color: theme.colors.error }]}>Sair da Conta</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -94,4 +140,6 @@ const styles = StyleSheet.create({
   helperText: { marginTop: 6, fontSize: 13 },
   actionButton: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
   actionText: { fontWeight: '600' },
+  logoutCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 12, padding: 16, marginTop: 'auto', marginBottom: 16 },
+  logoutText: { fontSize: 16, fontWeight: '600' },
 });
