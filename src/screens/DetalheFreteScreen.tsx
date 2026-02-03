@@ -99,6 +99,7 @@ export default function DetalheFreteScreen({ route, navigation }: any) {
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={[styles.header, { backgroundColor: theme.colors.card }]}>
+        <Text style={[styles.titleText, { color: theme.colors.text }]}>{frete.titulo || `${frete.origem} -> ${frete.destino}`}</Text>
         <View style={styles.routeContainer}>
           <Text style={[styles.routeText, { color: theme.colors.text }]}>{frete.origem}</Text>
           <Ionicons name="arrow-forward" size={24} color={theme.colors.primary} style={styles.arrow} />
@@ -249,6 +250,12 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     elevation: 2,
+  },
+  titleText: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 10,
+    textAlign: 'center',
   },
   routeContainer: {
     flexDirection: 'row',

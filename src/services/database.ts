@@ -17,6 +17,12 @@ import { Frete, NovoFrete, EstatisticasFretes } from '../models/Frete';
 
 const COLECAO = 'fretes';
 
+const obterTitulo = (data: any) => {
+  if (data?.titulo) return data.titulo;
+  if (data?.origem && data?.destino) return `${data.origem} -> ${data.destino}`;
+  return 'Frete';
+};
+
 // Cache local em memória para persistência offline
 let fretesCached: Frete[] = [];
 let cacheAtualizado = false;
@@ -51,6 +57,7 @@ export const initDatabase = async () => {
           const data = doc.data();
           return {
             id: doc.id,
+            titulo: obterTitulo(data),
             data: data.data,
             origem: data.origem,
             destino: data.destino,
@@ -81,6 +88,7 @@ export const criarFrete = async (novo: NovoFrete): Promise<Frete> => {
   try {
     const ts = Date.now();
     const freteData: any = {
+      titulo: novo.titulo,
       data: novo.data,
       origem: novo.origem,
       destino: novo.destino,
@@ -103,6 +111,7 @@ export const criarFrete = async (novo: NovoFrete): Promise<Frete> => {
 
     return {
       id: docRef.id,
+      titulo: novo.titulo,
       ...novo,
       statusPagamento: novo.statusPagamento || 'pendente',
       synced: true,
@@ -134,6 +143,7 @@ export const listarFretes = async (): Promise<Frete[]> => {
       const data = doc.data();
       return {
         id: doc.id,
+        titulo: obterTitulo(data),
         data: data.data,
         origem: data.origem,
         destino: data.destino,
@@ -176,6 +186,7 @@ export const buscarFretePorId = async (id: string): Promise<Frete | null> => {
     const data = docSnap.data();
     return {
       id: docSnap.id,
+      titulo: obterTitulo(data),
       data: data.data,
       origem: data.origem,
       destino: data.destino,

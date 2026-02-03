@@ -112,17 +112,6 @@ export default function HomeScreen({ navigation }: any) {
         </View>
       </View>
 
-      <View style={styles.actions}>
-        <TouchableOpacity style={[styles.btnPrimary, { backgroundColor: theme.colors.primary }]} onPress={() => navigation.navigate('NovoFrete')}>
-          <Ionicons name="add-circle" size={24} color={theme.colors.textOnPrimary} />
-          <Text style={[styles.btnPrimaryText, { color: theme.colors.textOnPrimary }]}>Novo Frete</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={[styles.btnSecondary, { backgroundColor: theme.colors.card, borderColor: theme.colors.primary }]} onPress={() => navigation.navigate('ListaFretes')}>
-          <Ionicons name="list" size={24} color={theme.colors.primary} />
-          <Text style={[styles.btnSecondaryText, { color: theme.colors.primary }]}>Ver Todos</Text>
-        </TouchableOpacity>
-      </View>
     </ScrollView>
   );
 }
@@ -147,9 +136,4 @@ const styles = StyleSheet.create({
   cardValueMed: { fontSize: 24, fontWeight: 'bold' },
   cardValue: { fontSize: 20, fontWeight: 'bold' },
   cardValueSaldo: { fontSize: 24, fontWeight: 'bold' },
-  actions: { padding: 15, gap: 10 },
-  btnPrimary: { borderRadius: 12, padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
-  btnPrimaryText: { fontSize: 18, fontWeight: '600' },
-  btnSecondary: { borderRadius: 12, padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderWidth: 2 },
-  btnSecondaryText: { fontSize: 18, fontWeight: '600' },
 });

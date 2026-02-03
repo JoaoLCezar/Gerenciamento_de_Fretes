@@ -9,6 +9,7 @@ import ListaFretesScreen from './src/screens/ListaFretesScreen';
 import NovoFreteScreen from './src/screens/NovoFreteScreen';
 import DetalheFreteScreen from './src/screens/DetalheFreteScreen';
 import EditarFreteScreen from './src/screens/EditarFreteScreen';
+import ConfiguracoesScreen from './src/screens/ConfiguracoesScreen';
 import { initDatabase } from './src/services/database';
 import { initOfflineQueue } from './src/services/offlineQueue';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
@@ -41,6 +42,7 @@ function AppNavigator() {
         <Stack.Screen name="NovoFrete" component={NovoFreteScreen} options={{ title: 'Novo Frete' }} />
         <Stack.Screen name="DetalheFrete" component={DetalheFreteScreen} options={{ title: 'Detalhes do Frete' }} />
         <Stack.Screen name="EditarFrete" component={EditarFreteScreen} options={{ title: 'Editar Frete' }} />
+        <Stack.Screen name="Configuracoes" component={ConfiguracoesScreen} options={{ title: 'Configurações' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

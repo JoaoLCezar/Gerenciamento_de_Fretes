@@ -21,6 +21,7 @@ export default function NovoFreteScreen({ navigation }: any) {
   const { theme } = useTheme();
   const [data, setData] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [titulo, setTitulo] = useState('');
   const [origem, setOrigem] = useState('');
   const [destino, setDestino] = useState('');
   const [valorTotal, setValorTotal] = useState('');
@@ -44,8 +45,8 @@ export default function NovoFreteScreen({ navigation }: any) {
   };
 
   const salvar = async () => {
-    if (!data || !origem || !destino || !valorTotal) {
-      Alert.alert('Campos obrigatorios', 'Preencha data, origem, destino e valor total.');
+    if (!titulo || !data || !origem || !destino || !valorTotal) {
+      Alert.alert('Campos obrigatorios', 'Preencha titulo, data, origem, destino e valor total.');
       return;
     }
 
@@ -76,6 +77,7 @@ export default function NovoFreteScreen({ navigation }: any) {
     setSaving(true);
     try {
       const freteData: any = {
+        titulo: titulo.trim(),
         data: formatarDataISO(data),
         origem,
         destino,
@@ -108,6 +110,7 @@ export default function NovoFreteScreen({ navigation }: any) {
       setSaldo('');
       setObservacoes('');
       setData(null);
+      setTitulo('');
       navigation.navigate('ListaFretes');
     } catch (err) {
       // Erro silencioso - salvo na fila mesmo assim
@@ -122,6 +125,17 @@ export default function NovoFreteScreen({ navigation }: any) {
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: theme.colors.background }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}>
         <Text style={[styles.title, { color: theme.colors.text }]}>Cadastrar frete</Text>
+
+        <View style={styles.field}>
+          <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Título</Text>
+          <TextInput
+            style={[styles.input, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.inputBorder, color: theme.colors.text }]}
+            placeholder="Ex: Entrega São Paulo"
+            placeholderTextColor={theme.colors.placeholder}
+            value={titulo}
+            onChangeText={setTitulo}
+          />
+        </View>
 
         <View style={styles.field}>
           <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Data (DD/MM/AAAA)</Text>
@@ -181,7 +195,7 @@ export default function NovoFreteScreen({ navigation }: any) {
           <TextInput
             style={[styles.input, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.inputBorder, color: theme.colors.text }]}
             placeholder="1500,00"
-                        placeholderTextColor={theme.colors.placeholder}
+            placeholderTextColor={theme.colors.placeholder}
             keyboardType="decimal-pad"
             value={valorTotal}
             onChangeText={setValorTotal}
@@ -194,7 +208,7 @@ export default function NovoFreteScreen({ navigation }: any) {
             <TextInput
               style={[styles.input, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.inputBorder, color: theme.colors.text }]}
               placeholder="500,00"
-                            placeholderTextColor={theme.colors.placeholder}
+              placeholderTextColor={theme.colors.placeholder}
               keyboardType="decimal-pad"
               value={adiantamento}
               onChangeText={setAdiantamento}
@@ -205,7 +219,7 @@ export default function NovoFreteScreen({ navigation }: any) {
             <TextInput
               style={[styles.input, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.inputBorder, color: theme.colors.text }]}
               placeholder="1000,00"
-                            placeholderTextColor={theme.colors.placeholder}
+              placeholderTextColor={theme.colors.placeholder}
               keyboardType="decimal-pad"
               value={saldo}
               onChangeText={setSaldo}
@@ -218,7 +232,7 @@ export default function NovoFreteScreen({ navigation }: any) {
           <TextInput
             style={[styles.input, styles.textArea, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.inputBorder, color: theme.colors.text }]}
             placeholder="Opcional"
-                        placeholderTextColor={theme.colors.placeholder}
+            placeholderTextColor={theme.colors.placeholder}
             value={observacoes}
             onChangeText={setObservacoes}
             multiline

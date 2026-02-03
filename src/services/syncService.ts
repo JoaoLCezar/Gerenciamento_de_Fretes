@@ -33,21 +33,24 @@ export const sincronizarDaNuvem = async () => {
   for (const docSnap of snap.docs) {
     const dados = docSnap.data();
     const local = await buscarFretePorId(docSnap.id);
+    const valorTotal = dados.valorTotal ?? dados.valor ?? 0;
     if (!local) {
       await criarFrete({
+        titulo: dados.titulo || `${dados.origem} -> ${dados.destino}`,
         data: dados.data,
         origem: dados.origem,
         destino: dados.destino,
-        valor: dados.valor,
+        valorTotal,
         observacoes: dados.observacoes,
       });
       await marcarComoSincronizado(docSnap.id);
     } else if (dados.updatedAt > local.updatedAt) {
       await atualizarFrete(docSnap.id, {
+        titulo: dados.titulo || local.titulo,
         data: dados.data,
         origem: dados.origem,
         destino: dados.destino,
-        valor: dados.valor,
+        valorTotal,
         observacoes: dados.observacoes,
       });
       await marcarComoSincronizado(docSnap.id);

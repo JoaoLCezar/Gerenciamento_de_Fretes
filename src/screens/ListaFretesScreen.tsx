@@ -9,7 +9,6 @@ import {
   View,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
 import { Frete } from '../models/Frete';
 import { listarFretes } from '../services/database';
 import { obterTextoStatus, obterCorStatus } from '../utils/statusHelper';
@@ -48,18 +47,21 @@ export default function ListaFretesScreen({ navigation }: any) {
     return `${dia}/${mes}/${ano}`;
   };
 
-  const renderItem = ({ item }: { item: Frete }) => (
+  const renderItem = ({ item }: { item: Frete }) => {
+    const titulo = item.titulo || `${item.origem} -> ${item.destino}`;
+    return (
     <TouchableOpacity 
       style={[styles.card, { backgroundColor: theme.colors.card }]}
       onPress={() => navigation.navigate('DetalheFrete', { freteId: item.id })}
       activeOpacity={0.7}
     >
       <View style={styles.cardHeader}>
-        <Text style={[styles.cardTitle, { color: theme.colors.text }]}>{`${item.origem} -> ${item.destino}`}</Text>
+        <Text style={[styles.cardTitle, { color: theme.colors.text }]}>{titulo}</Text>
         <View style={[styles.badge, { backgroundColor: obterCorStatus(item.statusPagamento) }]}>
           <Text style={styles.badgeText}>{obterTextoStatus(item.statusPagamento)}</Text>
         </View>
       </View>
+      <Text style={[styles.cardRoute, { color: theme.colors.textSecondary }]}>{`${item.origem} -> ${item.destino}`}</Text>
       <Text style={[styles.cardDate, { color: theme.colors.textSecondary }]}>{item.data ? formatarData(item.data) : 'Data indefinida'}</Text>
       <Text style={[styles.cardValue, { color: theme.colors.primary }]}>{formatarMoeda(item.valorTotal)}</Text>
       {item.adiantamento ? (
@@ -70,7 +72,8 @@ export default function ListaFretesScreen({ navigation }: any) {
       ) : null}
       {item.observacoes ? <Text style={[styles.cardObs, { color: theme.colors.text }]}>{item.observacoes}</Text> : null}
     </TouchableOpacity>
-  );
+    );
+  };
 
   if (loading) {
     return (
@@ -83,13 +86,6 @@ export default function ListaFretesScreen({ navigation }: any) {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <View style={styles.actions}>
-        <TouchableOpacity style={[styles.btnPrimary, { backgroundColor: theme.colors.primary }]} onPress={() => navigation.navigate('NovoFrete')}>
-          <Ionicons name="add" size={22} color={theme.colors.textOnPrimary} />
-          <Text style={[styles.btnPrimaryText, { color: theme.colors.textOnPrimary }]}>Novo frete</Text>
-        </TouchableOpacity>
-      </View>
-
       <FlatList
         data={fretes}
         keyExtractor={(item) => item.id}
@@ -114,18 +110,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   loading: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   loadingText: { marginTop: 8, fontSize: 16 },
-  actions: { flexDirection: 'row', gap: 10, padding: 12 },
-  btnPrimary: {
-    flex: 1,
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  btnPrimaryText: { fontWeight: '600', fontSize: 16 },
   listContent: { padding: 12, paddingBottom: 30 },
   emptyContainer: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
   emptyText: { fontSize: 16 },
@@ -137,6 +121,7 @@ const styles = StyleSheet.create({
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   cardTitle: { fontSize: 16, fontWeight: '700', flex: 1 },
+  cardRoute: { marginTop: 4, fontSize: 13 },
   badge: {
     paddingHorizontal: 8,
     paddingVertical: 4,

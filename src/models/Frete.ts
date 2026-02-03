@@ -6,6 +6,7 @@ export type StatusPagamento = 'pendente' | 'adiantamento_pago' | 'pago';
 
 export interface Frete {
   id: string;
+  titulo: string;
   data: string; // ISO string
   origem: string;
   destino: string;
@@ -20,6 +21,7 @@ export interface Frete {
 }
 
 export interface NovoFrete {
+  titulo: string;
   data: string;
   origem: string;
   destino: string;

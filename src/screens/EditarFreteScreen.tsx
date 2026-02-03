@@ -27,6 +27,7 @@ export default function EditarFreteScreen({ route, navigation }: any) {
   
   const [data, setData] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [titulo, setTitulo] = useState('');
   const [origem, setOrigem] = useState('');
   const [destino, setDestino] = useState('');
   const [valorTotal, setValorTotal] = useState('');
@@ -63,6 +64,7 @@ export default function EditarFreteScreen({ route, navigation }: any) {
       }
 
       setData(parseDataISO(frete.data));
+      setTitulo(frete.titulo || `${frete.origem} -> ${frete.destino}`);
       setOrigem(frete.origem);
       setDestino(frete.destino);
       setValorTotal(frete.valorTotal.toString().replace('.', ','));
@@ -84,8 +86,8 @@ export default function EditarFreteScreen({ route, navigation }: any) {
   );
 
   const salvar = async () => {
-    if (!data || !origem || !destino || !valorTotal) {
-      Alert.alert('Campos obrigatórios', 'Preencha data, origem, destino e valor total.');
+    if (!titulo || !data || !origem || !destino || !valorTotal) {
+      Alert.alert('Campos obrigatórios', 'Preencha titulo, data, origem, destino e valor total.');
       return;
     }
 
@@ -116,6 +118,7 @@ export default function EditarFreteScreen({ route, navigation }: any) {
     setSaving(true);
     try {
       const dadosAtualizados: any = {
+        titulo: titulo.trim(),
         data: formatarDataISO(data),
         origem,
         destino,
@@ -162,6 +165,17 @@ export default function EditarFreteScreen({ route, navigation }: any) {
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: theme.colors.background }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}>
         <Text style={[styles.title, { color: theme.colors.text }]}>Editar frete</Text>
+
+        <View style={styles.field}>
+          <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Título</Text>
+          <TextInput
+            style={[styles.input, { backgroundColor: theme.colors.inputBackground, borderColor: theme.colors.inputBorder, color: theme.colors.text }]}
+            placeholder="Ex: Entrega São Paulo"
+            placeholderTextColor={theme.colors.placeholder}
+            value={titulo}
+            onChangeText={setTitulo}
+          />
+        </View>
 
         <View style={styles.field}>
           <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Data (DD/MM/AAAA)</Text>
