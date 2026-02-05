@@ -21,23 +21,14 @@ if (!__DEV__) {
 }
 
 const firebaseConfig = {
-  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+  apiKey: "AIzaSyDscg5SvTC6VHITpgcnAM4Bs5nUpoIlyu8",
+  authDomain: "gerenciamento-de-fretes-ccc7c.firebaseapp.com",
+  projectId: "gerenciamento-de-fretes-ccc7c",
+  storageBucket: "gerenciamento-de-fretes-ccc7c.firebasestorage.app",
+  messagingSenderId: "16489676583",
+  appId: "1:16489676583:web:72f23be26f2098db5b3302",
+  measurementId: "G-8WN7H80K0B"
 };
-
-const missingFirebaseEnv = Object.entries(firebaseConfig)
-  .filter(([, value]) => !value)
-  .map(([key]) => key);
-
-if (missingFirebaseEnv.length > 0) {
-  const message = `Firebase env ausentes: ${missingFirebaseEnv.join(', ')}`;
-  console.error(message);
-  throw new Error(message);
-}
 
 const app = initializeApp(firebaseConfig);
 

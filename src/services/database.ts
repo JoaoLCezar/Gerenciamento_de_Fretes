@@ -30,6 +30,19 @@ const obterTitulo = (data: any) => {
 let fretesCached: Frete[] = [];
 let cacheAtualizado = false;
 let currentUserId: string | null = null;
+let unsubscribeSnapshot: (() => void) | null = null;
+
+// Limpar cache completamente (usado ao fazer logout)
+export const clearCache = () => {
+  fretesCached = [];
+  cacheAtualizado = false;
+  currentUserId = null;
+  if (unsubscribeSnapshot) {
+    unsubscribeSnapshot();
+    unsubscribeSnapshot = null;
+  }
+  console.log('🧹 Cache limpo completamente');
+};
 
 // Adicionar frete ao cache manualmente (para filas offline)
 export const addToCache = (frete: Frete) => {
@@ -52,8 +65,14 @@ export const removeFromCache = (freteId: string) => {
 
 // Inicializar listener para manter cache sempre atualizado (filtrado por usuário)
 export const initDatabase = async (userId?: string) => {
-  if (userId) {
+  if (userId && userId !== currentUserId) {
     currentUserId = userId;
+    fretesCached = [];
+    cacheAtualizado = false;
+    if (unsubscribeSnapshot) {
+      unsubscribeSnapshot();
+      unsubscribeSnapshot = null;
+    }
   }
   
   try {
@@ -66,7 +85,7 @@ export const initDatabase = async (userId?: string) => {
     // Ativar listener que mantém cache sincronizado APENAS para o usuário atual
     const q = query(collection(db, COLECAO), where('userId', '==', currentUserId));
     
-    onSnapshot(
+    unsubscribeSnapshot = onSnapshot(
       q,
       (snapshot) => {
         fretesCached = snapshot.docs.map((doc) => {
@@ -155,8 +174,14 @@ export const listarFretes = async (): Promise<Frete[]> => {
       return [];
     }
 
-    // Tenta buscar da rede
-    const snapshot = await getDocs(collection(db, COLECAO));
+    // Se não há usuário autenticado, não retorna dados
+    if (!currentUserId) {
+      return [];
+    }
+
+    // Tenta buscar da rede apenas do usuário atual
+    const q = query(collection(db, COLECAO), where('userId', '==', currentUserId));
+    const snapshot = await getDocs(q);
     const fretes = snapshot.docs.map((doc) => {
       const data = doc.data();
       return {

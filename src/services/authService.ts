@@ -179,6 +179,10 @@ export async function logout(): Promise<void> {
   } finally {
     // Sempre limpa sessão local
     await AsyncStorage.removeItem(SESSION_KEY);
+    
+    // Limpa cache de banco de dados
+    const { clearCache } = await import('./database');
+    clearCache();
   }
 }
 
