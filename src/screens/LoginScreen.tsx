@@ -10,9 +10,12 @@ import {
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { login, register } from '../services/authService';
 import { useTheme } from '../context/ThemeContext';
+import CustomButton from '../components/CustomButton';
+import CustomInput from '../components/CustomInput';
 
 interface LoginScreenProps {
   navigation?: any;
@@ -27,8 +30,6 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -80,134 +81,119 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
   const handleSubmit = isSignUp ? handleRegister : handleLogin;
 
   return (
-    <ScrollView
-      contentContainerStyle={[
-        styles.container,
-        { backgroundColor: theme.colors.background },
-        width < 768 && styles.mobileContainer,
-      ]}
+    <LinearGradient
+      colors={[theme.colors.primary, '#7B68EE']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.gradientBackground}
     >
-      <View style={styles.logoContainer}>
-        <Ionicons name="cube" size={64} color={theme.colors.primary} />
-        <Text style={[styles.title, { color: theme.colors.text }]}>Fretes</Text>
-        <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-          {isSignUp ? 'Crie sua conta' : 'Bem-vindo de volta'}
-        </Text>
-      </View>
+      <ScrollView
+        contentContainerStyle={[
+          styles.container,
+          width < 768 && styles.mobileContainer,
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Logo Container */}
+        <View style={styles.logoContainer}>
+          <View style={styles.logoCircle}>
+            <Ionicons name="cube" size={60} color="#FFFFFF" />
+          </View>
+          <Text style={styles.title}>Fretes Manager</Text>
+          <Text style={styles.subtitle}>
+            {isSignUp ? 'Crie sua conta para começar' : 'Bem-vindo de volta'}
+          </Text>
+        </View>
 
-      <View style={[styles.formContainer, { backgroundColor: theme.colors.card }]}>
-        {/* Email */}
-        <View style={styles.formGroup}>
-          <Text style={[styles.label, { color: theme.colors.text }]}>Email</Text>
-          <View style={[styles.inputContainer, { borderColor: theme.colors.primary }]}>
-            <Ionicons name="mail" size={20} color={theme.colors.textSecondary} />
-            <TextInput
-              style={[styles.input, { color: theme.colors.text }]}
+        {/* Form Container */}
+        <View style={[styles.formContainer, { backgroundColor: theme.colors.card }]}>
+          {/* Email */}
+          <View style={styles.formGroup}>
+            <Text style={[styles.label, { color: theme.colors.text }]}>Email</Text>
+            <CustomInput
               placeholder="seu@email.com"
-              placeholderTextColor={theme.colors.textSecondary}
               value={email}
               onChangeText={setEmail}
+              icon="mail"
               editable={!loading}
               keyboardType="email-address"
-              autoCapitalize="none"
             />
           </View>
-        </View>
 
-        {/* Senha */}
-        <View style={styles.formGroup}>
-          <Text style={[styles.label, { color: theme.colors.text }]}>Senha</Text>
-          <View style={[styles.inputContainer, { borderColor: theme.colors.primary }]}>
-            <Ionicons name="lock-closed" size={20} color={theme.colors.textSecondary} />
-            <TextInput
-              style={[styles.input, { color: theme.colors.text }]}
+          {/* Senha */}
+          <View style={styles.formGroup}>
+            <Text style={[styles.label, { color: theme.colors.text }]}>Senha</Text>
+            <CustomInput
               placeholder="Digite sua senha"
-              placeholderTextColor={theme.colors.textSecondary}
               value={password}
               onChangeText={setPassword}
-              secureTextEntry={!showPassword}
+              icon="lock-closed"
+              secureTextEntry
               editable={!loading}
             />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-              <Ionicons
-                name={showPassword ? 'eye-off' : 'eye'}
-                size={20}
-                color={theme.colors.textSecondary}
-              />
-            </TouchableOpacity>
           </View>
-        </View>
 
-        {/* Confirmar Senha (apenas em Sign Up) */}
-        {isSignUp && (
-          <View style={styles.formGroup}>
-            <Text style={[styles.label, { color: theme.colors.text }]}>Confirmar Senha</Text>
-            <View style={[styles.inputContainer, { borderColor: theme.colors.primary }]}>
-              <Ionicons name="lock-closed" size={20} color={theme.colors.textSecondary} />
-              <TextInput
-                style={[styles.input, { color: theme.colors.text }]}
+          {/* Confirmar Senha (apenas em Sign Up) */}
+          {isSignUp && (
+            <View style={styles.formGroup}>
+              <Text style={[styles.label, { color: theme.colors.text }]}>Confirmar Senha</Text>
+              <CustomInput
                 placeholder="Confirme sua senha"
-                placeholderTextColor={theme.colors.textSecondary}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
-                secureTextEntry={!showConfirmPassword}
+                icon="lock-closed"
+                secureTextEntry
                 editable={!loading}
               />
-              <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                <Ionicons
-                  name={showConfirmPassword ? 'eye-off' : 'eye'}
-                  size={20}
-                  color={theme.colors.textSecondary}
-                />
-              </TouchableOpacity>
             </View>
-          </View>
-        )}
-
-        {/* Botão Principal */}
-        <TouchableOpacity
-          style={[
-            styles.submitButton,
-            { backgroundColor: theme.colors.primary },
-            loading && styles.submitButtonDisabled,
-          ]}
-          onPress={handleSubmit}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color={theme.colors.textOnPrimary} size="small" />
-          ) : (
-            <Text style={[styles.submitButtonText, { color: theme.colors.textOnPrimary }]}>
-              {isSignUp ? 'Criar Conta' : 'Entrar'}
-            </Text>
           )}
-        </TouchableOpacity>
 
-        {/* Toggle entre Login e Registro */}
-        <View style={styles.toggleContainer}>
-          <Text style={{ color: theme.colors.textSecondary }}>
-            {isSignUp ? 'Já tem conta? ' : 'Não tem conta? '}
-          </Text>
-          <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)} disabled={loading}>
-            <Text style={[styles.toggleText, { color: theme.colors.primary }]}>
-              {isSignUp ? 'Entrar' : 'Registre-se'}
+          {/* Botão Principal */}
+          <CustomButton
+            onPress={handleSubmit}
+            title={isSignUp ? 'Criar Conta' : 'Entrar'}
+            loading={loading}
+            disabled={loading}
+            style={styles.submitButton}
+          />
+
+          {/* Toggle entre Login e Registro */}
+          <View style={styles.toggleContainer}>
+            <Text style={[styles.toggleQuestion, { color: theme.colors.textSecondary }]}>
+              {isSignUp ? 'Já tem conta? ' : 'Não tem conta? '}
             </Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setIsSignUp(!isSignUp)}
+              disabled={loading}
+            >
+              <Text style={[styles.toggleText, { color: theme.colors.primary }]}>
+                {isSignUp ? 'Entrar' : 'Registre-se'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Aviso de Modo Offline */}
+          <View style={[styles.offlineNotice, { backgroundColor: theme.colors.surface }]}>
+            <Ionicons name="alert-circle" size={16} color={theme.colors.warning} />
+            <Text style={[styles.offlineText, { color: theme.colors.text }]}>
+              Contas criadas localmente
+            </Text>
+          </View>
         </View>
 
-        {/* Aviso de Modo Offline */}
-        <View style={[styles.offlineNotice, { backgroundColor: theme.colors.primaryLight }]}>
-          <Ionicons name="alert-circle" size={18} color={theme.colors.primary} />
-          <Text style={[styles.offlineText, { color: theme.colors.text }]}>
-            Modo offline - Contas criadas localmente
-          </Text>
-        </View>
-      </View>
-    </ScrollView>
+        {/* Footer */}
+        <Text style={[styles.footer, { color: '#FFFFFF80' }]}>
+          © 2025 Gerenciamento de Fretes
+        </Text>
+      </ScrollView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  gradientBackground: {
+    flex: 1,
+  },
   container: {
     flexGrow: 1,
     justifyContent: 'center',
@@ -219,21 +205,40 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 48,
+  },
+  logoCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#FFFFFF20',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: '#FFFFFF40',
   },
   title: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: '700',
-    marginTop: 16,
+    color: '#FFFFFF',
+    marginBottom: 8,
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 14,
-    marginTop: 8,
+    fontSize: 16,
+    color: '#FFFFFF90',
+    fontWeight: '500',
   },
   formContainer: {
-    borderRadius: 12,
-    padding: 24,
-    marginBottom: 24,
+    borderRadius: 20,
+    padding: 28,
+    marginBottom: 32,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
   },
   formGroup: {
     marginBottom: 20,
@@ -241,55 +246,44 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    marginBottom: 8,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    height: 48,
-    gap: 10,
-  },
-  input: {
-    flex: 1,
-    fontSize: 16,
+    marginBottom: 10,
+    letterSpacing: 0.3,
   },
   submitButton: {
-    height: 48,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 24,
-  },
-  submitButtonDisabled: {
-    opacity: 0.7,
-  },
-  submitButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
+    marginTop: 28,
+    marginBottom: 20,
   },
   toggleContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 16,
+    marginBottom: 20,
+    gap: 4,
+  },
+  toggleQuestion: {
+    fontSize: 14,
+    fontWeight: '500',
   },
   toggleText: {
-    fontWeight: '600',
+    fontWeight: '700',
     fontSize: 14,
   },
   offlineNotice: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 16,
+    gap: 12,
+    padding: 14,
+    borderRadius: 12,
+    marginTop: 12,
   },
   offlineText: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  footer: {
+    textAlign: 'center',
     fontSize: 12,
     fontWeight: '500',
+    marginTop: 20,
   },
 });

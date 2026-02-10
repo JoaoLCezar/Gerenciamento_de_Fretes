@@ -51,61 +51,61 @@ interface ThemeContextType {
 }
 
 const lightTheme: ThemeColors = {
-  background: '#F5F5F5',
+  background: '#F8F9FF',
   card: '#FFFFFF',
-  surface: '#FAFAFA',
+  surface: '#F0F2F7',
   
-  text: '#333333',
-  textSecondary: '#666666',
+  text: '#1A1A2E',
+  textSecondary: '#6B7280',
   textOnPrimary: '#FFFFFF',
   
   primary: '#007AFF',
   primaryLight: '#E3F2FD',
   
-  success: '#4CAF50',
-  warning: '#FF9800',
-  error: '#FF6B6B',
-  info: '#2196F3',
+  success: '#10B981',
+  warning: '#F59E0B',
+  error: '#EF4444',
+  info: '#3B82F6',
   
-  border: '#E0E0E0',
-  divider: '#EEEEEE',
+  border: '#E5E7EB',
+  divider: '#F3F4F6',
   
   inputBackground: '#FFFFFF',
-  inputBorder: '#DDDDDD',
-  placeholder: '#999999',
+  inputBorder: '#E5E7EB',
+  placeholder: '#9CA3AF',
   
-  badgePendente: '#FF6B6B',
-  badgeAdiantamento: '#FFA500',
-  badgePago: '#28A745',
+  badgePendente: '#FEE2E2',
+  badgeAdiantamento: '#FEF08A',
+  badgePago: '#DCFCE7',
 };
 
 const darkTheme: ThemeColors = {
-  background: '#121212',
-  card: '#1E1E1E',
-  surface: '#2C2C2C',
+  background: '#0F172A',
+  card: '#1E293B',
+  surface: '#334155',
   
-  text: '#FFFFFF',
-  textSecondary: '#B0B0B0',
+  text: '#F1F5F9',
+  textSecondary: '#CBD5E1',
   textOnPrimary: '#FFFFFF',
   
-  primary: '#0A84FF',
-  primaryLight: '#1A2942',
+  primary: '#0EA5E9',
+  primaryLight: '#0C4A6E',
   
-  success: '#4CAF50',
-  warning: '#FF9800',
-  error: '#FF6B6B',
-  info: '#2196F3',
+  success: '#10B981',
+  warning: '#F59E0B',
+  error: '#EF4444',
+  info: '#3B82F6',
   
-  border: '#3A3A3A',
-  divider: '#2A2A2A',
+  border: '#475569',
+  divider: '#334155',
   
-  inputBackground: '#2C2C2C',
-  inputBorder: '#3A3A3A',
-  placeholder: '#666666',
+  inputBackground: '#1E293B',
+  inputBorder: '#475569',
+  placeholder: '#94A3B8',
   
-  badgePendente: '#FF6B6B',
-  badgeAdiantamento: '#FFA500',
-  badgePago: '#28A745',
+  badgePendente: '#7F1D1D',
+  badgeAdiantamento: '#78350F',
+  badgePago: '#064E3B',
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);

@@ -11,11 +11,14 @@ import {
   ScrollView,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { Frete, StatusPagamento } from '../models/Frete';
 import { listarFretes } from '../services/database';
 import { obterTextoStatus, obterCorStatus } from '../utils/statusHelper';
 import { useTheme } from '../context/ThemeContext';
+import Card from '../components/Card';
+import CustomInput from '../components/CustomInput';
 
 type TipoOrdenacao = 'recente' | 'antigo' | 'maiorValor' | 'menorValor';
 
@@ -125,31 +128,58 @@ export default function ListaFretesScreen({ navigation }: any) {
     return `${dia}/${mes}/${ano}`;
   };
 
+  const getStatusColor = (status: StatusPagamento) => {
+    switch (status) {
+      case 'pendente':
+        return '#FEE2E2';
+      case 'adiantamento_pago':
+        return '#FEF08A';
+      case 'pago':
+        return '#DCFCE7';
+      default:
+        return theme.colors.surface;
+    }
+  };
+
   const renderItem = ({ item }: { item: Frete }) => {
     const titulo = item.titulo || `${item.origem} -> ${item.destino}`;
     return (
-    <TouchableOpacity 
-      style={[styles.card, { backgroundColor: theme.colors.card }]}
-      onPress={() => navigation.navigate('DetalheFrete', { freteId: item.id })}
-      activeOpacity={0.7}
-    >
-      <View style={styles.cardHeader}>
-        <Text style={[styles.cardTitle, { color: theme.colors.text }]}>{titulo}</Text>
-        <View style={[styles.badge, { backgroundColor: obterCorStatus(item.statusPagamento) }]}>
-          <Text style={styles.badgeText}>{obterTextoStatus(item.statusPagamento)}</Text>
-        </View>
-      </View>
-      <Text style={[styles.cardRoute, { color: theme.colors.textSecondary }]}>{`${item.origem} -> ${item.destino}`}</Text>
-      <Text style={[styles.cardDate, { color: theme.colors.textSecondary }]}>{item.data ? formatarData(item.data) : 'Data indefinida'}</Text>
-      <Text style={[styles.cardValue, { color: theme.colors.primary }]}>{formatarMoeda(item.valorTotal)}</Text>
-      {item.adiantamento ? (
-        <Text style={[styles.cardInfo, { color: theme.colors.textSecondary }]}>Adiantamento: {formatarMoeda(item.adiantamento)}</Text>
-      ) : null}
-      {item.saldo ? (
-        <Text style={[styles.cardInfo, { color: theme.colors.textSecondary }]}>Saldo: {formatarMoeda(item.saldo)}</Text>
-      ) : null}
-      {item.observacoes ? <Text style={[styles.cardObs, { color: theme.colors.text }]}>{item.observacoes}</Text> : null}
-    </TouchableOpacity>
+      <Card style={styles.fretesCard}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('DetalheFrete', { freteId: item.id })}
+          activeOpacity={0.6}
+        >
+          <View style={styles.cardHeader}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.cardTitle, { color: theme.colors.text }]} numberOfLines={1}>
+                {titulo}
+              </Text>
+              <Text style={[styles.cardRoute, { color: theme.colors.textSecondary }]}>
+                {`${item.origem} → ${item.destino}`}
+              </Text>
+            </View>
+            <View style={[styles.badge, { backgroundColor: getStatusColor(item.statusPagamento) }]}>
+              <Text style={[styles.badgeText, { color: obterCorStatus(item.statusPagamento) }]}>
+                {obterTextoStatus(item.statusPagamento)}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.cardFooter}>
+            <View style={styles.footerLeft}>
+              <View style={styles.footerItem}>
+                <Ionicons name="calendar" size={14} color={theme.colors.textSecondary} />
+                <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>
+                  {formatarData(item.data)}
+                </Text>
+              </View>
+            </View>
+            <Text style={[styles.cardValue, { color: theme.colors.success }]}>
+              {formatarMoeda(item.valorTotal)}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </Card>
     );
   };
 
@@ -166,14 +196,15 @@ export default function ListaFretesScreen({ navigation }: any) {
     <TouchableOpacity
       style={[
         styles.chip,
+        active && styles.chipActive,
         { 
-          backgroundColor: active ? theme.colors.primary : theme.colors.card,
-          borderColor: active ? theme.colors.primary : theme.colors.border,
+          backgroundColor: active ? theme.colors.primary : theme.colors.surface,
+          borderColor: theme.colors.border,
         }
       ]}
       onPress={onPress}
     >
-      <Text style={[styles.chipText, { color: active ? theme.colors.textOnPrimary : theme.colors.text }]}>
+      <Text style={[styles.chipText, { color: active ? '#FFFFFF' : theme.colors.text }]}>
         {label}
       </Text>
     </TouchableOpacity>
@@ -181,21 +212,24 @@ export default function ListaFretesScreen({ navigation }: any) {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      {/* Header */}
+      <LinearGradient
+        colors={[theme.colors.primary, '#7B68EE']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.headerGradient}
+      >
+        <Text style={styles.headerTitle}>Fretes</Text>
+      </LinearGradient>
+
       {/* Barra de busca */}
-      <View style={[styles.searchContainer, { backgroundColor: theme.colors.card }]}>
-        <Ionicons name="search" size={20} color={theme.colors.textSecondary} />
-        <TextInput
-          style={[styles.searchInput, { color: theme.colors.text }]}
-          placeholder="Buscar por título, origem ou destino..."
-          placeholderTextColor={theme.colors.textSecondary}
+      <View style={styles.searchSection}>
+        <CustomInput
+          placeholder="Buscar fretes..."
           value={busca}
           onChangeText={handleBuscaChange}
+          icon="search"
         />
-        {busca.length > 0 && (
-          <TouchableOpacity onPress={() => handleBuscaChange('')}>
-            <Ionicons name="close-circle" size={20} color={theme.colors.textSecondary} />
-          </TouchableOpacity>
-        )}
       </View>
 
       {/* Filtros de Status */}
@@ -222,6 +256,7 @@ export default function ListaFretesScreen({ navigation }: any) {
 
       {/* Contador de resultados */}
       <View style={styles.resultadosContainer}>
+        <Ionicons name="filter" size={16} color={theme.colors.textSecondary} />
         <Text style={[styles.resultadosText, { color: theme.colors.textSecondary }]}>
           {fretesFiltrados.length} {fretesFiltrados.length === 1 ? 'frete' : 'fretes'}
         </Text>
@@ -245,7 +280,7 @@ export default function ListaFretesScreen({ navigation }: any) {
           <View style={styles.emptyState}>
             <Ionicons name="document-text-outline" size={64} color={theme.colors.textSecondary} />
             <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
-              {busca || statusFiltro !== 'todos' ? 'Nenhum frete encontrado com os filtros aplicados' : 'Nenhum frete cadastrado'}
+              {busca || statusFiltro !== 'todos' ? 'Nenhum frete encontrado' : 'Nenhum frete cadastrado'}
             </Text>
           </View>
         }
@@ -258,85 +293,30 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   loading: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   loadingText: { marginTop: 8, fontSize: 16 },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    margin: 12,
-    marginBottom: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 10,
-    gap: 8,
-    elevation: 2,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 15,
-    paddingVertical: 0,
-  },
-  filtersSection: {
-    paddingHorizontal: 12,
-    marginBottom: 8,
-  },
-  filterLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    marginBottom: 6,
-  },
-  chipsContainer: {
-    flexDirection: 'row',
-  },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginRight: 8,
-    borderWidth: 1,
-  },
-  chipText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  resultadosContainer: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  resultadosText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  listContent: { padding: 12, paddingTop: 4, paddingBottom: 30 },
+  headerGradient: { paddingHorizontal: 20, paddingTop: 60, paddingBottom: 20 },
+  headerTitle: { fontSize: 32, fontWeight: '800', color: '#FFFFFF', letterSpacing: -1 },
+  searchSection: { paddingHorizontal: 12, paddingVertical: 8 },
+  filtersSection: { paddingHorizontal: 12, paddingBottom: 12 },
+  filterLabel: { fontSize: 13, fontWeight: '700', marginBottom: 8, letterSpacing: 0.3 },
+  chipsContainer: { flexDirection: 'row', paddingVertical: 0 },
+  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, marginRight: 8, borderWidth: 1 },
+  chipActive: { elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4 },
+  chipText: { fontSize: 13, fontWeight: '600' },
+  resultadosContainer: { paddingHorizontal: 16, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 6 },
+  resultadosText: { fontSize: 12, fontWeight: '600' },
+  listContent: { paddingHorizontal: 12, paddingVertical: 8, paddingBottom: 30 },
   emptyContainer: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  emptyState: { 
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    padding: 40,
-    gap: 12,
-  },
-  emptyText: { fontSize: 16, textAlign: 'center' },
-  card: {
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 10,
-    elevation: 3,
-  },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  cardTitle: { fontSize: 16, fontWeight: '700', flex: 1 },
-  cardRoute: { marginTop: 4, fontSize: 13 },
-  badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    marginLeft: 8,
-  },
-  badgeText: {
-    color: '#FFF',
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  cardDate: { marginTop: 6, fontSize: 13 },
-  cardValue: { marginTop: 8, fontSize: 18, fontWeight: 'bold' },
-  cardInfo: { marginTop: 4, fontSize: 13 },
-  cardObs: { marginTop: 6, fontSize: 14 },
+  emptyState: { justifyContent: 'center', alignItems: 'center', paddingVertical: 40 },
+  emptyText: { fontSize: 16, fontWeight: '500', marginTop: 16, textAlign: 'center' },
+  fretesCard: { marginBottom: 8 },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12, gap: 10 },
+  cardTitle: { fontSize: 16, fontWeight: '700', letterSpacing: -0.5 },
+  cardRoute: { fontSize: 13, marginTop: 4, fontWeight: '500' },
+  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, borderTopWidth: 1, borderTopColor: '#E5E7EB' },
+  footerLeft: { flexDirection: 'row', gap: 12 },
+  footerItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  footerText: { fontSize: 12, fontWeight: '500' },
+  cardValue: { fontSize: 16, fontWeight: '800', letterSpacing: -0.5 },
+  badge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
+  badgeText: { fontSize: 12, fontWeight: '700' },
 });

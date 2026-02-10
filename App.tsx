@@ -4,6 +4,7 @@ import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
 import { ActivityIndicator, StyleSheet, Text, View, TouchableOpacity, useWindowDimensions } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from './src/screens/HomeScreen';
@@ -50,7 +51,7 @@ function MainStackNavigator() {
 }
 
 function CustomDrawerContent({ navigation, state, collapsed, onToggle, user, onLogout }: any) {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const focusedRoute = state.routes[state.index];
   const nestedState = focusedRoute?.state;
   const currentScreen = nestedState?.routes?.[nestedState.index]?.name || 'Home';
@@ -61,18 +62,23 @@ function CustomDrawerContent({ navigation, state, collapsed, onToggle, user, onL
       <TouchableOpacity
         style={[
           styles.drawerItem,
-          { backgroundColor: isActive ? theme.colors.primaryLight : 'transparent' },
+          isActive && styles.drawerItemActive,
+          { backgroundColor: isActive ? theme.colors.primary + '20' : 'transparent' },
         ]}
         onPress={() => navigation.navigate('MainStack', { screen: target })}
+        activeOpacity={0.6}
       >
-        <Ionicons name={icon} size={22} color={isActive ? theme.colors.primary : theme.colors.text} />
+        <View style={[styles.iconContainer, isActive && { backgroundColor: theme.colors.primary + '40' }]}>
+          <Ionicons name={icon} size={20} color={isActive ? theme.colors.primary : theme.colors.text} />
+        </View>
         <Text
           style={[
             styles.drawerLabel,
             {
-              color: theme.colors.text,
-              display: collapsed ? 'flex' : 'flex',
-              opacity: collapsed ? 1 : 1,
+              color: isActive ? theme.colors.primary : theme.colors.text,
+              fontWeight: isActive ? '700' : '500',
+              opacity: collapsed ? 0 : 1,
+              display: collapsed ? 'none' : 'flex',
             },
           ]}
           numberOfLines={1}
@@ -84,47 +90,85 @@ function CustomDrawerContent({ navigation, state, collapsed, onToggle, user, onL
   };
 
   return (
-    <DrawerContentScrollView contentContainerStyle={[styles.drawerContent, { flex: 1 }]}>
-      {/* User Profile */}
-      {!collapsed && user && (
-        <View style={[styles.userProfile, { backgroundColor: theme.colors.primaryLight }]}>
-          <Ionicons name="person-circle" size={40} color={theme.colors.primary} />
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.userName, { color: theme.colors.text }]} numberOfLines={1}>
-              {user.displayName || user.email?.split('@')[0] || 'Usuário'}
-            </Text>
-            <Text style={[styles.userEmail, { color: theme.colors.textSecondary }]} numberOfLines={1}>
-              {user.email}
-            </Text>
+    <LinearGradient
+      colors={isDark ? [theme.colors.card, theme.colors.surface] : [theme.colors.card, theme.colors.primaryLight + '30']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={{ flex: 1 }}
+    >
+      <DrawerContentScrollView contentContainerStyle={[styles.drawerContent, { flex: 1 }]}>
+        {/* User Profile Card */}
+        {!collapsed && user && (
+          <View style={[styles.userProfile, { backgroundColor: theme.colors.primary }]}>
+            <View style={styles.avatarContainer}>
+              <Ionicons name="person-circle" size={50} color="#FFFFFF" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.userName, { color: '#FFFFFF' }]} numberOfLines={1}>
+                {user.displayName || user.email?.split('@')[0] || 'Usuário'}
+              </Text>
+              <Text style={[styles.userEmail, { color: '#FFFFFF90' }]} numberOfLines={1}>
+                {user.email}
+              </Text>
+            </View>
           </View>
-        </View>
-      )}
-
-      <TouchableOpacity style={styles.drawerToggle} onPress={onToggle}>
-        <Ionicons name={collapsed ? 'chevron-forward' : 'chevron-back'} size={22} color={theme.colors.text} />
-        <Text style={[styles.drawerLabel, { color: theme.colors.text }]}>
-          {collapsed ? 'Expandir' : 'Minimizar'}
-        </Text>
-      </TouchableOpacity>
-
-      <Item label="Dashboard" icon="home" target="Home" />
-      <Item label="Novo frete" icon="add-circle" target="NovoFrete" />
-      <Item label="Ver fretes" icon="list" target="ListaFretes" />
-      <Item label="Configurações" icon="settings" target="Configuracoes" />
-
-      {/* Logout Button */}
-      <TouchableOpacity
-        style={[styles.logoutButton, { borderTopColor: theme.colors.border }]}
-        onPress={onLogout}
-      >
-        <Ionicons name="log-out" size={22} color={theme.colors.error} />
-        {!collapsed && (
-          <Text style={[styles.drawerLabel, { color: theme.colors.error }]}>
-            Sair
-          </Text>
         )}
-      </TouchableOpacity>
-    </DrawerContentScrollView>
+
+        {collapsed && user && (
+          <View style={styles.collapsedAvatar}>
+            <Ionicons name="person-circle" size={36} color={theme.colors.primary} />
+          </View>
+        )}
+
+        {/* Menu Items */}
+        <View style={styles.menuSection}>
+          {!collapsed && <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>Menu</Text>}
+          <Item label="Dashboard" icon="home" target="Home" />
+          <Item label="Novo Frete" icon="add-circle" target="NovoFrete" />
+          <Item label="Ver Fretes" icon="list" target="ListaFretes" />
+          <Item label="Configurações" icon="settings" target="Configuracoes" />
+        </View>
+
+        {/* Spacer */}
+        <View style={{ flex: 1 }} />
+
+        {/* Toggle Button */}
+        <TouchableOpacity
+          style={[styles.drawerToggle, { backgroundColor: theme.colors.surface }]}
+          onPress={onToggle}
+          activeOpacity={0.7}
+        >
+          <View style={styles.toggleIconContainer}>
+            <Ionicons 
+              name={collapsed ? 'chevron-forward' : 'chevron-back'} 
+              size={18} 
+              color={theme.colors.primary} 
+            />
+          </View>
+          {!collapsed && (
+            <Text style={[styles.toggleLabel, { color: theme.colors.text }]}>
+              Minimizar
+            </Text>
+          )}
+        </TouchableOpacity>
+
+        {/* Logout Button */}
+        <TouchableOpacity
+          style={[styles.logoutButton, { backgroundColor: theme.colors.error + '15' }]}
+          onPress={onLogout}
+          activeOpacity={0.6}
+        >
+          <View style={styles.iconContainer}>
+            <Ionicons name="log-out" size={20} color={theme.colors.error} />
+          </View>
+          {!collapsed && (
+            <Text style={[styles.logoutText, { color: theme.colors.error }]}>
+              Sair
+            </Text>
+          )}
+        </TouchableOpacity>
+      </DrawerContentScrollView>
+    </LinearGradient>
   );
 }
 
@@ -251,12 +295,125 @@ const styles = StyleSheet.create({
   splashText: { marginTop: 12, fontSize: 16 },
   errorText: { fontSize: 16, textAlign: 'center', paddingHorizontal: 20 },
   menuButton: { marginLeft: 12, padding: 6 },
-  drawerContent: { paddingTop: 16, gap: 8, flex: 1 },
-  drawerToggle: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12 },
-  drawerItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 10, marginHorizontal: 8 },
-  drawerLabel: { fontSize: 15, fontWeight: '600' },
-  userProfile: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 8, marginBottom: 12, marginHorizontal: 8 },
-  userName: { fontSize: 14, fontWeight: '700' },
-  userEmail: { fontSize: 12 },
-  logoutButton: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 14, borderTopWidth: 1, marginTop: 'auto', borderRadius: 10, marginHorizontal: 8 },
+  drawerContent: { paddingHorizontal: 8, paddingTop: 12, paddingBottom: 16, gap: 4, flex: 1 },
+  
+  // User Profile
+  userProfile: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 14, 
+    padding: 16, 
+    borderRadius: 16, 
+    marginBottom: 20, 
+    marginHorizontal: 4,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+  },
+  avatarContainer: { 
+    width: 56, 
+    height: 56, 
+    borderRadius: 28, 
+    backgroundColor: '#FFFFFF20', 
+    justifyContent: 'center', 
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF40',
+  },
+  collapsedAvatar: { 
+    alignItems: 'center', 
+    paddingVertical: 12, 
+    marginBottom: 12 
+  },
+  userName: { 
+    fontSize: 14, 
+    fontWeight: '700', 
+    letterSpacing: -0.5 
+  },
+  userEmail: { 
+    fontSize: 12, 
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  
+  // Menu Items
+  menuSection: { gap: 6 },
+  sectionTitle: { 
+    fontSize: 12, 
+    fontWeight: '700', 
+    marginLeft: 12, 
+    marginBottom: 8, 
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  drawerItem: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 12, 
+    paddingVertical: 10, 
+    paddingHorizontal: 12, 
+    borderRadius: 12, 
+    marginHorizontal: 4,
+  },
+  drawerItemActive: {
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+  },
+  iconContainer: { 
+    width: 40, 
+    height: 40, 
+    borderRadius: 10, 
+    justifyContent: 'center', 
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  drawerLabel: { 
+    fontSize: 14, 
+    fontWeight: '600',
+    letterSpacing: -0.3,
+  },
+  
+  // Toggle Button
+  drawerToggle: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 10, 
+    padding: 12, 
+    borderRadius: 12, 
+    marginHorizontal: 4,
+    marginBottom: 8,
+  },
+  toggleIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  toggleLabel: { 
+    fontSize: 13, 
+    fontWeight: '600',
+    letterSpacing: -0.3,
+  },
+  
+  // Logout Button
+  logoutButton: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 12, 
+    paddingVertical: 10, 
+    paddingHorizontal: 12, 
+    borderRadius: 12, 
+    marginHorizontal: 4,
+  },
+  logoutText: { 
+    fontSize: 14, 
+    fontWeight: '700',
+    letterSpacing: -0.3,
+  },
 });

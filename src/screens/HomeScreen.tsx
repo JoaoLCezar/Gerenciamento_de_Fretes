@@ -2,10 +2,12 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { EstatisticasFretes } from '../models/Frete';
 import { calcularEstatisticas } from '../services/database';
 import { useTheme } from '../context/ThemeContext';
+import Card from '../components/Card';
 
 export default function HomeScreen({ navigation }: any) {
   const { theme, toggleTheme, isDark } = useTheme();
@@ -61,76 +63,99 @@ export default function HomeScreen({ navigation }: any) {
     <ScrollView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); carregar(); }} />}
+      showsVerticalScrollIndicator={false}
     >
-      <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
+      {/* Header com Gradiente */}
+      <LinearGradient
+        colors={[theme.colors.primary, '#7B68EE']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
         <View style={styles.headerTop}>
           <View>
             <Text style={styles.title}>Dashboard</Text>
             <Text style={styles.subtitle}>Gestão de Fretes</Text>
           </View>
           <View style={styles.headerButtons}>
-            <TouchableOpacity onPress={() => setValoresVisiveis(!valoresVisiveis)} style={styles.eyeButton}>
-              <Ionicons name={valoresVisiveis ? 'eye' : 'eye-off'} size={24} color={theme.colors.textOnPrimary} />
+            <TouchableOpacity onPress={() => setValoresVisiveis(!valoresVisiveis)} style={styles.headerButton}>
+              <Ionicons name={valoresVisiveis ? 'eye' : 'eye-off'} size={22} color="#FFFFFF" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={toggleTheme} style={styles.themeButton}>
-              <Ionicons name={isDark ? 'sunny' : 'moon'} size={24} color={theme.colors.textOnPrimary} />
+            <TouchableOpacity onPress={toggleTheme} style={styles.headerButton}>
+              <Ionicons name={isDark ? 'sunny' : 'moon'} size={22} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </LinearGradient>
 
-      <View style={styles.section}>
+      <View style={styles.content}>
+        {/* Total Faturado - Card Principal */}
+        <Card gradient gradientColors={[theme.colors.success, '#84C82C']}>
+          <View style={styles.mainCardContent}>
+            <View>
+              <Text style={styles.mainCardLabel}>Total Faturado</Text>
+              <Text style={[styles.mainCardValue, { opacity: valoresVisiveis ? 1 : 0.4 }]}>
+                {renderValor(formatarMoeda(stats.totalFaturado))}
+              </Text>
+            </View>
+            <View style={styles.mainCardIcon}>
+              <Ionicons name="cash" size={48} color="#FFFFFF" />
+            </View>
+          </View>
+        </Card>
+
+        {/* Seção Totais Gerais */}
         <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>📊 Totais Gerais</Text>
-        <View style={[styles.cardBig, { backgroundColor: theme.colors.card }]}>
-          <Ionicons name="cash-outline" size={40} color={theme.colors.success} />
-          <View style={styles.cardContent}>
-            <Text style={[styles.cardLabel, { color: theme.colors.textSecondary }]}>Total Faturado</Text>
-            <Text style={[styles.cardValueBig, { color: theme.colors.success, opacity: valoresVisiveis ? 1 : 0.3 }]}>
-              {renderValor(formatarMoeda(stats.totalFaturado))}
-            </Text>
-          </View>
-        </View>
+        <View style={styles.gridContainer}>
+          <Card style={styles.gridCard}>
+            <View style={styles.smallCardHeader}>
+              <View style={[styles.iconContainer, { backgroundColor: '#E0F2FE' }]}>
+                <Ionicons name="file-tray-full" size={24} color={theme.colors.info} />
+              </View>
+            </View>
+            <Text style={[styles.smallCardLabel, { color: theme.colors.textSecondary }]}>Total de Fretes</Text>
+            <Text style={[styles.smallCardValue, { color: theme.colors.info }]}>{stats.quantidadeFretes}</Text>
+          </Card>
 
-        <View style={[styles.cardSmall, { backgroundColor: theme.colors.card }]}>
-          <Ionicons name="file-tray-full-outline" size={30} color={theme.colors.info} />
-          <View style={styles.cardContent}>
-            <Text style={[styles.cardLabel, { color: theme.colors.textSecondary }]}>Total de Fretes</Text>
-            <Text style={[styles.cardValue, { color: theme.colors.info }]}>{stats.quantidadeFretes}</Text>
-          </View>
-        </View>
-
-        <View style={[styles.cardMedium, { backgroundColor: theme.colors.card }]}>
-          <Ionicons name="wallet-outline" size={35} color={theme.colors.error} />
-          <View style={styles.cardContent}>
-            <Text style={[styles.cardLabel, { color: theme.colors.textSecondary }]}>Saldo Total a Receber</Text>
-            <Text style={[styles.cardValueSaldo, { color: theme.colors.error, opacity: valoresVisiveis ? 1 : 0.3 }]}>
+          <Card style={styles.gridCard}>
+            <View style={styles.smallCardHeader}>
+              <View style={[styles.iconContainer, { backgroundColor: '#FEE2E2' }]}>
+                <Ionicons name="wallet" size={24} color={theme.colors.error} />
+              </View>
+            </View>
+            <Text style={[styles.smallCardLabel, { color: theme.colors.textSecondary }]}>Saldo a Receber</Text>
+            <Text style={[styles.smallCardValue, { color: theme.colors.error, opacity: valoresVisiveis ? 1 : 0.4 }]}>
               {renderValor(formatarMoeda(stats.totalSaldo))}
             </Text>
-          </View>
+          </Card>
         </View>
-      </View>
 
-      <View style={styles.section}>
+        {/* Seção Mês Atual */}
         <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>📅 Mês Atual</Text>
-        <View style={[styles.cardMedium, { backgroundColor: theme.colors.card }]}>
-          <Ionicons name="trending-up-outline" size={35} color={theme.colors.warning} />
-          <View style={styles.cardContent}>
-            <Text style={[styles.cardLabel, { color: theme.colors.textSecondary }]}>Faturado no Mês</Text>
-            <Text style={[styles.cardValueMed, { color: theme.colors.warning, opacity: valoresVisiveis ? 1 : 0.3 }]}>
+        <View style={styles.gridContainer}>
+          <Card style={styles.gridCard}>
+            <View style={styles.smallCardHeader}>
+              <View style={[styles.iconContainer, { backgroundColor: '#FEF08A' }]}>
+                <Ionicons name="trending-up" size={24} color={theme.colors.warning} />
+              </View>
+            </View>
+            <Text style={[styles.smallCardLabel, { color: theme.colors.textSecondary }]}>Faturado no Mês</Text>
+            <Text style={[styles.smallCardValue, { color: theme.colors.warning, opacity: valoresVisiveis ? 1 : 0.4 }]}>
               {renderValor(formatarMoeda(stats.freteMesAtual))}
             </Text>
-          </View>
-        </View>
+          </Card>
 
-        <View style={[styles.cardSmall, { backgroundColor: theme.colors.card }]}>
-          <Ionicons name="calendar-outline" size={30} color="#9C27B0" />
-          <View style={styles.cardContent}>
-            <Text style={[styles.cardLabel, { color: theme.colors.textSecondary }]}>Fretes no Mês</Text>
-            <Text style={[styles.cardValue, { color: theme.colors.info }]}>{stats.quantidadeMesAtual}</Text>
-          </View>
+          <Card style={styles.gridCard}>
+            <View style={styles.smallCardHeader}>
+              <View style={[styles.iconContainer, { backgroundColor: '#E9D5FF' }]}>
+                <Ionicons name="calendar" size={24} color="#9333EA" />
+              </View>
+            </View>
+            <Text style={[styles.smallCardLabel, { color: theme.colors.textSecondary }]}>Fretes no Mês</Text>
+            <Text style={[styles.smallCardValue, { color: '#9333EA' }]}>{stats.quantidadeMesAtual}</Text>
+          </Card>
         </View>
       </View>
-
     </ScrollView>
   );
 }
@@ -139,22 +164,23 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   loading: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   loadingText: { marginTop: 10, fontSize: 16 },
-  header: { padding: 20, paddingTop: 60, paddingBottom: 30 },
+  header: { paddingHorizontal: 20, paddingTop: 60, paddingBottom: 30 },
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  headerButtons: { flexDirection: 'row', gap: 8 },
-  eyeButton: { padding: 8 },
-  themeButton: { padding: 8 },
-  title: { fontSize: 32, fontWeight: 'bold', color: '#FFF' },
-  subtitle: { fontSize: 16, color: '#E3F2FD', marginTop: 5 },
-  section: { padding: 15 },
-  sectionTitle: { fontSize: 18, fontWeight: '600', marginBottom: 15 },
-  cardBig: { borderRadius: 12, padding: 20, marginBottom: 15, flexDirection: 'row', alignItems: 'center', elevation: 3 },
-  cardMedium: { borderRadius: 12, padding: 18, marginBottom: 15, flexDirection: 'row', alignItems: 'center', elevation: 3 },
-  cardSmall: { borderRadius: 12, padding: 15, marginBottom: 10, flexDirection: 'row', alignItems: 'center', elevation: 3 },
-  cardContent: { marginLeft: 15, flex: 1 },
-  cardLabel: { fontSize: 14, marginBottom: 5 },
-  cardValueBig: { fontSize: 28, fontWeight: 'bold' },
-  cardValueMed: { fontSize: 24, fontWeight: 'bold' },
-  cardValue: { fontSize: 20, fontWeight: 'bold' },
-  cardValueSaldo: { fontSize: 24, fontWeight: 'bold' },
+  headerButtons: { flexDirection: 'row', gap: 12 },
+  headerButton: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#FFFFFF20', justifyContent: 'center', alignItems: 'center' },
+  title: { fontSize: 32, fontWeight: '800', color: '#FFFFFF', letterSpacing: -1 },
+  subtitle: { fontSize: 14, color: '#FFFFFF90', marginTop: 6, fontWeight: '500' },
+  content: { padding: 16 },
+  mainCardContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  mainCardLabel: { fontSize: 14, color: '#FFFFFF90', fontWeight: '500', marginBottom: 8 },
+  mainCardValue: { fontSize: 32, fontWeight: '800', color: '#FFFFFF', letterSpacing: -1 },
+  mainCardIcon: { width: 80, height: 80, borderRadius: 20, backgroundColor: '#FFFFFF20', justifyContent: 'center', alignItems: 'center' },
+  sectionTitle: { fontSize: 18, fontWeight: '700', marginTop: 24, marginBottom: 12, letterSpacing: -0.5 },
+  gridContainer: { flexDirection: 'row', gap: 12, marginBottom: 8 },
+  gridCard: { flex: 1 },
+  smallCardHeader: { marginBottom: 12 },
+  iconContainer: { width: 48, height: 48, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  smallCardLabel: { fontSize: 12, fontWeight: '500', marginBottom: 8, letterSpacing: 0.3 },
+  smallCardValue: { fontSize: 20, fontWeight: '700', letterSpacing: -0.5 },
 });
+
